@@ -6,7 +6,7 @@ import Jumbotron from 'react-bootstrap/Jumbotron'
 import ReactSearchBox from 'react-search-box'
 var ipfsClient = require('ipfs-http-client');
 var ipfs = ipfsClient({host:'ipfs.infura.io',port:'5001',protocol: 'https' }) ;
-
+var CryptoJS = require("crypto-js");
 
 class checkRequest  extends Component{
 
@@ -38,7 +38,8 @@ class checkRequest  extends Component{
         //this.pausecomp(8500);
         //this.pausecomp(4500);
         await this.loadData();
-        //await this.check();
+        await this.check();
+        this.pausecomp(4500)
         await this.getName();
         await this.loadNameList();
         await this.loadWeb3()
@@ -57,6 +58,7 @@ class checkRequest  extends Component{
         this.setState({userBlockchainResultOfParticularUser:this.props.location.userBlockchainResultOfParticularUser});
         var groupKey=this.makeid(10)
         console.log(groupKey);
+        this.setState({groupKey:groupKey});
      }
 
 
@@ -76,9 +78,19 @@ class checkRequest  extends Component{
       console.log(this.state.userJsonResultOfParticularUserFromIPFS);
       console.log(this.state.totalUser);
       console.log(this.state.userBlockchainResultOfParticularUser);
-      console.log(this.state.totalUserName);
+      //console.log(this.state.totalUserName);
       console.log(this.state.hasError);
-      //console.log(this.state.)
+      console.log(this.state.userBlockchainResultOfParticularUser.publicKey);
+      var groupKey=this.state.groupKey;
+      console.log(groupKey);
+      console.log(this.state.userBlockchainResultOfParticularUser.userPublicKey);
+      var ciphertext = CryptoJS.AES.encrypt(this.state.groupKey, this.state.userBlockchainResultOfParticularUser.userPublicKey).toString();
+      console.log(ciphertext);
+      // Decrypt
+       var bytes  = CryptoJS.AES.decrypt(ciphertext, this.state.userBlockchainResultOfParticularUser.userPublicKey);
+       var originalText = bytes.toString(CryptoJS.enc.Utf8);
+       console.log(originalText); // 'my message'
+
      }
      async getName(){
        console.log(this.state.userJsonResultOfParticularUserFromIPFS);
@@ -155,7 +167,7 @@ class checkRequest  extends Component{
           }
         }
         ipfs.get("/ipfs/"+userHash,(error,result)=>{        
-          console.log("Information of friend to add");
+          console.log("Information of friend to add which button clicked");
           console.log(dataParse);
           console.log(dataParse.emailId);
           var uint8array = new TextEncoder("utf-8").encode("¢");
@@ -256,7 +268,18 @@ class checkRequest  extends Component{
             }
           }
           console.log(obj);
-         // userJsonResult.requestNotAccepted=obj
+       //   userJsonResult.requestNotAccepted=obj
+
+          for(var i=0;i<userJsonResult.friend.length;i++){
+            console.log("collect the friends");
+
+          }
+          console.log("get the public key of the friends");
+          console.log("get the public key of the person who will added to the group");
+          var publicKeyofCurrentUser= this.state.userBlockchainResultOfParticularUser.publicKey;
+
+
+      
           });
 
           ipfs.get("/ipfs/"+this.state.userBlockchainResultOfParticularUser.userHash,(error,result)=>{        
