@@ -6,7 +6,7 @@ import Jumbotron from 'react-bootstrap/Jumbotron'
 import ReactSearchBox from 'react-search-box'
 var ipfsClient = require('ipfs-http-client');
 var ipfs = ipfsClient({host:'ipfs.infura.io',port:'5001',protocol: 'https' }) ;
-
+var CryptoJS = require("crypto-js");
 
 class checkRequest  extends Component{
 
@@ -38,7 +38,8 @@ class checkRequest  extends Component{
         //this.pausecomp(8500);
         //this.pausecomp(4500);
         await this.loadData();
-        //await this.check();
+        await this.check();
+        this.pausecomp(4500)
         await this.getName();
         await this.loadNameList();
         await this.loadWeb3()
@@ -57,6 +58,7 @@ class checkRequest  extends Component{
         this.setState({userBlockchainResultOfParticularUser:this.props.location.userBlockchainResultOfParticularUser});
         var groupKey=this.makeid(10)
         console.log(groupKey);
+        this.setState({groupKey:groupKey});
      }
 
 
@@ -71,14 +73,24 @@ class checkRequest  extends Component{
    }
 
      check=()=>{
-      console.log(this.state.fullName);
-      console.log(this.state.userEmailId)
-      console.log(this.state.userJsonResultOfParticularUserFromIPFS);
-      console.log(this.state.totalUser);
-      console.log(this.state.userBlockchainResultOfParticularUser);
-      console.log(this.state.totalUserName);
-      console.log(this.state.hasError);
-      //console.log(this.state.)
+      // console.log(this.state.fullName);
+      // console.log(this.state.userEmailId)
+      // console.log(this.state.userJsonResultOfParticularUserFromIPFS);
+      // console.log(this.state.totalUser);
+      // console.log(this.state.userBlockchainResultOfParticularUser);
+      // //console.log(this.state.totalUserName);
+      // console.log(this.state.hasError);
+      console.log(this.state.userBlockchainResultOfParticularUser.publicKey);
+      var groupKey=this.state.groupKey;
+      console.log(groupKey);
+      console.log(this.state.userBlockchainResultOfParticularUser.userPublicKey);
+      var ciphertext = CryptoJS.AES.encrypt(this.state.groupKey, this.state.userBlockchainResultOfParticularUser.userPublicKey).toString();
+      console.log(ciphertext);
+      // Decrypt
+       var bytes  = CryptoJS.AES.decrypt(ciphertext, this.state.userBlockchainResultOfParticularUser.userPublicKey);
+       var originalText = bytes.toString(CryptoJS.enc.Utf8);
+       console.log(originalText); // 'my message'
+
      }
      async getName(){
        console.log(this.state.userJsonResultOfParticularUserFromIPFS);
@@ -145,6 +157,7 @@ class checkRequest  extends Component{
         //console.log(this.state.userHash);
         var userHash;
         var userId;
+      
         for(var i=0;i<this.state.totalUser.length;i++){
           if(this.state.totalUser[i].userEmailId==dataParse.emailId){
             console.log("Same");
@@ -155,7 +168,7 @@ class checkRequest  extends Component{
           }
         }
         ipfs.get("/ipfs/"+userHash,(error,result)=>{        
-          console.log("Information of friend to add");
+          console.log("Information of friend to add which button clicked");
           console.log(dataParse);
           console.log(dataParse.emailId);
           var uint8array = new TextEncoder("utf-8").encode("¢");
@@ -231,11 +244,14 @@ class checkRequest  extends Component{
       acceptFriendRequest=(dataParse)=>{
         console.log(dataParse);
         var userHash;
+        var dataParseUserBlockchainData;
+        var groupKey1=this.makeid(10);
         for(var i=0;i<this.state.totalUser.length;i++){
             if(dataParse.emailId==this.state.totalUser[i].userEmailId){
                 console.log("same");
                 console.log(this.state.totalUser[i].userHash);
                 userHash=this.state.totalUser[i].userHash;
+                dataParseUserBlockchainData=this.state.totalUser[i];
             }
         }
         console.log(userHash);
@@ -243,8 +259,11 @@ class checkRequest  extends Component{
           console.log("Information of friend to add");
           var uint8array = new TextEncoder("utf-8").encode("¢");
           var UserStringResult = new TextDecoder("utf-8").decode(result[0].content);
+          var oldUserJsonResult=JSON.parse(UserStringResult);
           var userJsonResult = JSON.parse(UserStringResult);
           console.log("Friend to be add information");
+          var friendsArray=userJsonResult.friend;
+          console.log(friendsArray);
           console.log(userJsonResult.request);
           var obj=[];
           for(var i=0;i<userJsonResult.request.length;i++){
@@ -256,7 +275,95 @@ class checkRequest  extends Component{
             }
           }
           console.log(obj);
-         // userJsonResult.requestNotAccepted=obj
+          //Updating the request arry
+          userJsonResult.request=obj;
+
+          console.log(userJsonResult);
+          var friendInformation={
+            name:this.state.fullName,
+            emailId:this.state.userEmailId,
+            userId:this.state.userBlockchainResultOfParticularUser.userId
+          }
+          userJsonResult.friend.push(friendInformation);
+          //Updating the friend ( adding the friend in friend list )
+          console.log(userJsonResult);
+          //****************
+          //Now userJson is updated
+       // updating the group information 
+
+         var groupVersion = userJsonResult.groupVersion;
+         groupVersion++;
+         userJsonResult.groupVersion=groupVersion;
+         userJsonResult.currentGroupKey=groupKey1; 
+         console.log(friendsArray.length);
+         console.log(friendsArray);
+          for(var i=0;i<userJsonResult.friend.length;i++){
+            console.log("collect the friends");
+          }
+          console.log(userJsonResult);
+          var originalContentString = Buffer.from(JSON.stringify(userJsonResult));
+          // The json is change to string format 
+          const userContent= {
+            content:originalContentString
+        }
+          ipfs.add(userContent,(error,results)=>{
+            console.log(results);
+            var userInformationHash= results[0].hash;
+            console.log(results[0].hash);  
+            console.log(dataParse.userId);          
+               this.state.contract.methods.changeUserInformation(dataParse.userId,userInformationHash).send({from: this.state.account}).then((r)=>{
+                  console.log(r);
+              });
+          });
+
+
+
+
+
+
+          console.log(oldUserJsonResult);
+          var groupKeyVersion = oldUserJsonResult.groupKeyVersion;
+          groupKeyVersion++;
+          var groupKeyVersion2=parseInt(groupKeyVersion)
+          console.log("get the public key of the friends");
+          console.log("get the public key of the person who will added to the group");
+          
+          var dataParsePublicKey= dataParseUserBlockchainData.userPublicKey;
+          console.log(dataParsePublicKey);
+          var encryptedGroupkey= CryptoJS.AES.encrypt(groupKey1, this.state.userBlockchainResultOfParticularUser.userPublicKey).toString();
+          var resultSet=[];
+          var singleUserData={
+            name:this.state.fullName,
+            emailId:this.state. userEmailId,
+            encryptedGroupkey:encryptedGroupkey
+          }
+          resultSet.push(singleUserData);
+          console.log(resultSet);
+
+          var mainObject={
+            commonGroupKey:groupKey1,
+            groupOwnerName:dataParse.name,
+            groupDetails:resultSet,
+            groupVersion:groupVersion
+          }
+
+          var originalContentString = Buffer.from(JSON.stringify(mainObject));
+          // The json is change to string format 
+          const userContent2= {
+            content:originalContentString
+        }
+        ipfs.add(userContent2,(error,results)=>{
+          console.log(results);
+          var userInformationHash2= results[0].hash;
+          console.log(results[0].hash);  
+          console.log(dataParse.userId);          
+             this.state.contract.methods.createGroup(dataParse.emailId,userInformationHash2,"jhhh",1).send({from: this.state.account}).then((r)=>{
+                console.log(r);
+            });
+        });
+
+
+
           });
 
           ipfs.get("/ipfs/"+this.state.userBlockchainResultOfParticularUser.userHash,(error,result)=>{        
