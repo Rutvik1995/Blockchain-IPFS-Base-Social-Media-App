@@ -31,6 +31,7 @@ class MainPage  extends Component{
       }
 
       loadData=()=>{
+        console.log("in load data");
        this.setState({fullName:this.props.location.fullName});
        this.setState({userEmailId:this.props.location.userEmailId});
        this.setState({userJsonResultOfParticularUserFromIPFS:this.props.location.userJsonResultOfParticularUserFromIPFS});
@@ -103,6 +104,11 @@ class MainPage  extends Component{
       }
       checkFriendRequest=()=>{
         console.log("In check friend request");
+        console.log(this.state.userEmailId);
+        console.log(this.state.fullName);
+        console.log(this.state.userJsonResultOfParticularUserFromIPFS);
+        console.log(this.state.totalUser);
+        console.log(this.state.userBlockchainResultOfParticularUser);
            this.props.history.push({
              pathname: '/checkRequest',
              userEmailId: this.state.userEmailId,

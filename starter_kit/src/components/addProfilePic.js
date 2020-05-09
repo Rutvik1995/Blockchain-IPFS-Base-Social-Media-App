@@ -144,8 +144,8 @@ class addProfilePic  extends Component{
         ipfs.add(userContent,(error,results)=>{
           console.log(results);
           var userInformationHash= results[0].hash;
-          this.setState({userJsonResultOfParticularUserFromIPFS:userInformationHash});
-        
+         // this.setState({userJsonResultOfParticularUserFromIPFS:userInformationHash});
+        //console.log(this.state.userJsonResultOfParticularUserFromIPFS);
           console.log(results[0].hash);
           this.setState({IPFSuserInformationHash:results[0].hash});   
          
