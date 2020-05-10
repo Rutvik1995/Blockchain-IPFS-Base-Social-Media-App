@@ -45,7 +45,7 @@ contract Meme{
     }
 
     uint public groupCount=0;
-    function createGroup(string memory _groupEmailId,string memory _groupHash,string memory _publicKey, uint  _versionId)  public {
+    function createGroup(string memory _groupEmailId,string memory _groupHash, uint  _versionId)  public {
 
         groupCount++;
         groupInformation[groupCount]=groupHash(groupCount,_groupEmailId,_groupHash,_versionId);

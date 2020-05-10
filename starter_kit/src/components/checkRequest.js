@@ -27,7 +27,9 @@ class checkRequest  extends Component{
           userNameList:null,
           userBlockchainResultOfParticularUser:null,
           groupKey:'',
-          hasError: false 
+          hasError: false,
+          userMap:null,
+          userPublicKeyMap:null 
         };       
       }
 
@@ -38,8 +40,10 @@ class checkRequest  extends Component{
         //this.pausecomp(8500);
         //this.pausecomp(4500);
         await this.loadData();
+       
         await this.check();
         this.pausecomp(4500)
+        await this.loadUserMap();
         await this.getName();
         await this.loadNameList();
         await this.loadWeb3()
@@ -49,7 +53,8 @@ class checkRequest  extends Component{
         console.log(this.state.totalUserName);
       }
       async loadData(){
-       
+       this.setState({userMap:new Map()});
+       this.setState({userPublicKeyMap:new Map()});
         this.setState({fullName:this.props.location.fullName});
         this.setState({userEmailId:this.props.location.userEmailId});
         this.setState({userJsonResultOfParticularUserFromIPFS:this.props.location.userJsonResultOfParticularUserFromIPFS});
@@ -59,6 +64,9 @@ class checkRequest  extends Component{
         var groupKey=this.makeid(10)
         console.log(groupKey);
         this.setState({groupKey:groupKey});
+     }
+     async loadUserMap(){
+
      }
 
 
@@ -80,6 +88,15 @@ class checkRequest  extends Component{
       // console.log(this.state.userBlockchainResultOfParticularUser);
       // //console.log(this.state.totalUserName);
       // console.log(this.state.hasError);
+      console.log(this.state.totalUser);
+      for(var j=0;j<this.state.totalUser.length;j++){
+        // console.log(this.state.totalUser[j].userEmailId);
+        // console.log(this.state.totalUser[j].userHash);
+        this.state.userMap.set(this.state.totalUser[j].userEmailId,this.state.totalUser[j].userHash);
+        this.state.userPublicKeyMap.set(this.state.totalUser[j].userEmailId,this.state.totalUser[j].publickey);
+      }
+      console.log(this.state.userMap);
+      console.log(this.state.userPublicKeyMap);
       console.log(this.state.userBlockchainResultOfParticularUser.publicKey);
       var groupKey=this.state.groupKey;
       console.log(groupKey);
@@ -246,14 +263,17 @@ class checkRequest  extends Component{
         var userHash;
         var dataParseUserBlockchainData;
         var groupKey1=this.makeid(10);
+        var groupKey2=this.makeid(10);
         for(var i=0;i<this.state.totalUser.length;i++){
             if(dataParse.emailId==this.state.totalUser[i].userEmailId){
                 console.log("same");
                 console.log(this.state.totalUser[i].userHash);
                 userHash=this.state.totalUser[i].userHash;
                 dataParseUserBlockchainData=this.state.totalUser[i];
+                break;
             }
         }
+        console.log(dataParseUserBlockchainData);
         console.log(userHash);
         ipfs.get("/ipfs/"+userHash,(error,result)=>{        
           console.log("Information of friend to add");
@@ -295,13 +315,18 @@ class checkRequest  extends Component{
          groupVersion++;
          userJsonResult.groupVersion=groupVersion;
          userJsonResult.currentGroupKey=groupKey1; 
-         console.log(friendsArray.length);
-         console.log(friendsArray);
-          for(var i=0;i<userJsonResult.friend.length;i++){
-            console.log("collect the friends");
-          }
-          console.log(userJsonResult);
+
+         // No User right now 
+        //  console.log(friendsArray.length);
+        //  console.log(friendsArray);
+        //   for(var i=0;i<userJsonResult.friend.length;i++){
+        //     console.log("collect the friends");
+        //   }
+        //   console.log(userJsonResult);
           var originalContentString = Buffer.from(JSON.stringify(userJsonResult));
+      
+      
+      
           // The json is change to string format 
           const userContent= {
             content:originalContentString
@@ -322,29 +347,57 @@ class checkRequest  extends Component{
 
 
           console.log(oldUserJsonResult);
+          var currentGroupVersion=oldUserJsonResult.groupVersion;
+          currentGroupVersion++;
           var groupKeyVersion = oldUserJsonResult.groupKeyVersion;
           groupKeyVersion++;
           var groupKeyVersion2=parseInt(groupKeyVersion)
           console.log("get the public key of the friends");
           console.log("get the public key of the person who will added to the group");
           
-          var dataParsePublicKey= dataParseUserBlockchainData.userPublicKey;
-          console.log(dataParsePublicKey);
+          // No use right now 
+          // var dataParsePublicKey= dataParseUserBlockchainData.userPublicKey;
+          // console.log(dataParsePublicKey);
           var encryptedGroupkey= CryptoJS.AES.encrypt(groupKey1, this.state.userBlockchainResultOfParticularUser.userPublicKey).toString();
           var resultSet=[];
           var singleUserData={
-            name:this.state.fullName,
-            emailId:this.state. userEmailId,
-            encryptedGroupkey:encryptedGroupkey
+           // name:this.state.fullName,
+            emailId:this.state.userEmailId,
+            encryptedGroupkey:encryptedGroupkey,
+            userHash:this.state.userBlockchainResultOfParticularUser.userHash
           }
           resultSet.push(singleUserData);
+
+
+          for(var j=0;j<oldUserJsonResult.friend.length;j++){
+            // console.log(oldUserJsonResult.friend[j].emailId)
+           // console.log(this.state.userMap.get(oldUserJsonResult.friend[j].emailId));
+            //console.log(this.state.userPublicKeyMap.get(oldUserJsonResult.friend[j].emailId))
+  
+  
+            var localUserHash=this.state.userMap.get(oldUserJsonResult.friend[j].emailId);
+            var localPublicKey=this.state.userPublicKeyMap.get(oldUserJsonResult.friend[j].emailId);
+            var localEncryptedGroupkey= CryptoJS.AES.encrypt(groupKey1, localPublicKey).toString();
+            var localSingleUserData={
+              emailId:oldUserJsonResult.friend[j].emailId,
+              encryptedGroupkey:localEncryptedGroupkey,
+              userHash:localUserHash
+            }
+            resultSet.push(localSingleUserData);
+            //myMap.get(keyString) 
+           }
+
+
           console.log(resultSet);
+          // for(var j=0;j<oldUserJsonResult.friend){
+
+          // }
 
           var mainObject={
             commonGroupKey:groupKey1,
             groupOwnerName:dataParse.name,
             groupDetails:resultSet,
-            groupVersion:groupVersion
+            groupVersion:currentGroupVersion
           }
 
           var originalContentString = Buffer.from(JSON.stringify(mainObject));
@@ -357,7 +410,7 @@ class checkRequest  extends Component{
           var userInformationHash2= results[0].hash;
           console.log(results[0].hash);  
           console.log(dataParse.userId);          
-             this.state.contract.methods.createGroup(dataParse.emailId,userInformationHash2,"jhhh",1).send({from: this.state.account}).then((r)=>{
+             this.state.contract.methods.createGroup(dataParse.emailId,userInformationHash2,currentGroupVersion).send({from: this.state.account}).then((r)=>{
                 console.log(r);
             });
         });
@@ -371,6 +424,7 @@ class checkRequest  extends Component{
             
             var uint8array = new TextEncoder("utf-8").encode("¢");
             var UserStringResult = new TextDecoder("utf-8").decode(result[0].content);
+            var oldUserJsonResult=JSON.parse(UserStringResult);
             var userJsonResult = JSON.parse(UserStringResult);
             console.log("Friend to be add information");
             console.log(userJsonResult);
@@ -385,7 +439,130 @@ class checkRequest  extends Component{
               }
             }
             console.log(obj);
+            userJsonResult.requestNotAccepted=obj;
            // userJsonResult.requestNotAccepted=obj
+           console.log(userJsonResult);
+           var friendInformation={
+             name:dataParse.name,
+             emailId:dataParse.emailId,
+             userId:dataParse.userId
+           }
+
+           userJsonResult.friend.push(friendInformation);
+
+         
+           //Updating the friend ( adding the friend in friend list )
+           console.log(userJsonResult);
+           //****************
+           //Now userJson is updated
+        // updating the group information 
+
+         var groupVersion = userJsonResult.groupVersion;
+          groupVersion++;
+         userJsonResult.groupVersion=groupVersion;
+         userJsonResult.currentGroupKey=groupKey2; 
+
+         var originalContentString = Buffer.from(JSON.stringify(userJsonResult));
+         // The json is change to string format 
+         const userContent3= {
+           content:originalContentString
+       }
+         ipfs.add(userContent3,(error,results)=>{
+           console.log(results);
+           var userInformationHash= results[0].hash;
+           console.log(results[0].hash);  
+           console.log(dataParse.userId);          
+              this.state.contract.methods.changeUserInformation(this.state.userBlockchainResultOfParticularUser.userId,userInformationHash).send({from: this.state.account}).then((r)=>{
+                 console.log(r);
+             });
+         });
+
+
+
+//////
+
+
+         console.log(oldUserJsonResult);
+         var groupKeyVersion = oldUserJsonResult.groupVersion;
+         groupKeyVersion++;
+         var currentGroupKeyVersion=oldUserJsonResult.groupVersion;
+
+         var groupKeyVersion=parseInt(groupKeyVersion)
+         console.log("get the public key of the friends");
+         console.log("get the public key of the person who will added to the group");
+         
+         var dataParsePublicKey= dataParseUserBlockchainData.publickey;
+         console.log(dataParseUserBlockchainData);
+         console.log(dataParsePublicKey);
+        // chqnge it 
+         var encryptedGroupkey= CryptoJS.AES.encrypt(groupKey2, dataParsePublicKey).toString();
+         var resultSet=[];
+        
+         var singleUserData={
+          //  name:dataParse.name,
+           emailId:dataParse.emailId,
+           encryptedGroupkey:encryptedGroupkey,
+           userHash:dataParseUserBlockchainData.userHash
+         }
+         resultSet.push(singleUserData);
+         for(var j=0;j<oldUserJsonResult.friend.length;j++){
+          // console.log(oldUserJsonResult.friend[j].emailId)
+          console.log(this.state.userMap.get(oldUserJsonResult.friend[j].emailId));
+          console.log(this.state.userPublicKeyMap.get(oldUserJsonResult.friend[j].emailId))
+
+
+          var localUserHash=this.state.userMap.get(oldUserJsonResult.friend[j].emailId);
+          var localPublicKey=this.state.userPublicKeyMap.get(oldUserJsonResult.friend[j].emailId);
+          var localEncryptedGroupkey= CryptoJS.AES.encrypt(groupKey2, localPublicKey).toString();
+          var localSingleUserData={
+            emailId:oldUserJsonResult.friend[j].emailId,
+            encryptedGroupkey:localEncryptedGroupkey,
+            userHash:localUserHash
+          }
+          resultSet.push(localSingleUserData);
+          //myMap.get(keyString) 
+         }
+
+         
+         console.log(resultSet);
+        // console.log(this.state.fullName);
+         //console.log(this.state.userBlockchainResultOfParticularUser.fullName);
+         var mainObject={
+           commonGroupKey:groupKey2,
+           groupOwnerName:this.state.fullName,
+           groupDetails:resultSet,
+           groupVersion:groupKeyVersion
+         }
+         console.log(mainObject);
+
+         var originalContentString = Buffer.from(JSON.stringify(mainObject));
+         // The json is change to string format 
+         const userContent2= {
+           content:originalContentString
+       }
+       ipfs.add(userContent2,(error,results)=>{
+         console.log(results);
+         var userInformationHash2= results[0].hash;
+         console.log(results[0].hash);  
+         console.log(dataParse.userId);         
+         console.log(this.state.userEmailId) ;
+         console.log(groupKeyVersion);
+         console.log(currentGroupKeyVersion);
+         currentGroupKeyVersion++;
+         console.log(currentGroupKeyVersion);
+            this.state.contract.methods.createGroup(this.state.userEmailId,userInformationHash2,groupKeyVersion).send({from: this.state.account}).then((r)=>{
+               console.log(r);
+           });
+       });
+
+
+
+
+
+
+
+         
+
             });
       }
 
