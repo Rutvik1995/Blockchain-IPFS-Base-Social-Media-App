@@ -1,7 +1,7 @@
 import React, { Component,useState } from 'react';
 import Web3 from 'web3';
 import Meme from '../abis/Meme.json';
-import { Form,InputGroup, Button, Container,Row,Col,FormGroup, FormControl, ControlLabel,Navbar,Card,ButtonToolbar,ListGroup,ListGroupItem } from "react-bootstrap";
+import { Form,InputGroup, Button,Nav,Navbar,Card} from "react-bootstrap";
 import Jumbotron from 'react-bootstrap/Jumbotron'
 import ReactSearchBox from 'react-search-box'
 var ipfsClient = require('ipfs-http-client');
@@ -232,6 +232,8 @@ class searchFriends extends Component{
       }
      
 
+
+
       pausecomp=(millis)=>{
         var date = new Date();
         var curDate = null;
@@ -240,6 +242,35 @@ class searchFriends extends Component{
        }
        
        render(){
+
+        const mystyle = {
+          textAlign: "center",
+          font: "inherit",
+          border: "6px solid #a3d8d6",
+          padding: "13px 12px",
+          fontSize: "15px",
+          boxShadow: "0 1px 1px #DDD",
+          width: " 900px",
+          outline: "none",
+          display: "block",
+          color: "#788585",
+          margin: "0 auto 20px",
+          height:"60px"
+          // color: "white",
+          // backgroundColor: "DodgerBlue",
+          // padding: "10px",
+          // fontFamily: "Arial",
+          // cursor: "pointer"
+         
+        };
+        const ReactHeading= 
+        {textAlign: "center",
+         padding: "50px",
+        textTransform: "uppercase",
+        color: "DodgerBlue"
+      }
+       
+
         var userNameList= this.state.totalUserName.filter(
           (people)=>{
             return people.name.indexOf(this.state.search)!==-1
@@ -255,37 +286,59 @@ class searchFriends extends Component{
           </Card.Body>
         </Card>
         );
-
+       let list2 = userNameList.map(people => 
+        <Card>
+  <Card.Body>
+  <div className="container">
+            <div className="box media">
+          <figure className="image is-96x96 media-left">
+            <img src={'https://ipfs.infura.io/ipfs/QmYah59VfHQTNPnhk1f5hwnVqkxRC6CB9xvMjzLro9VBsw'} style={{height: "100%",  width:"200px" }} alt={"Rutvik"} />
+          </figure>
+          <div className="media-content">
+            {/* <p className="subtitle"><b><h4>{people.name}</h4></b></p> */}
+            <Card.Title>{people.name}</Card.Title>
+            <br></br>
+            <Card.Link  onClick={() => this.addFriend(people)}><Button variant="primary" size="sm" >Add Friend</Button></Card.Link>
+            <Card.Link  ><Button variant="secondary" size="sm" >View Profile</Button></Card.Link>
+          </div>
+        </div>
+        </div>
+    </Card.Body>
+</Card>
+//
+       );
        
    
         return(
-          <div className="container">
+          <div>
+            <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous"></link>  
+          <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+          <a
+            className="navbar-brand col-sm-3 col-md-2 mr-0 text-center"
+            target="_blank"
+            rel="noopener noreferrer">
+          <h1></h1>
+          <p></p>
+          <div></div>
+          </a>
+       </nav>
+<br></br>
+       <Navbar bg="light" expand="lg">
+                    <Navbar.Brand href="#home"><img  src={"https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQtRwMIKUhJfgz64gGRnrGmgHWdPsnP4zv_HlocpHesF_3BM8Aw&usqp=CAU"}  style={{height: "100%",  width:"70px" }} alt="" className="img-responsive" /></Navbar.Brand>
+                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                    <Navbar.Collapse id="basic-navbar-nav">
+                        <Nav className="mr-auto">
+                        <Nav.Link ><Button variant="primary" onClick={this.mainPage}> <span className="fa fa-backward"></span> Main Page</Button></Nav.Link>
+                        {/* <Nav.Link ><Button variant="outline-secondary" onClick={this.searchFriends}><span className=" fa fa-search"></span>  Search Friend</Button></Nav.Link> */}
+                        </Nav>
+                    <Button variant="primary"  style={{marginRight: "10px" }}><span className="fa fa-id-badge"  ></span>  {this.state.fullName}</Button>
+                    <Button Button variant="light" onClick={this.signOut} ><span class="fa fa-sign-out"></span> Log Out</Button>
+                </Navbar.Collapse>
+                </Navbar>
 
-              <br></br>
-              <br></br>
-              <button variant="primary" type="button" onClick={this.mainPage}>Main Page</button>
-              <br></br>
-              <br></br>
-              <br></br>
             <div className="container text-center ">
-            <Jumbotron>
-                   <h1>Hello,{this.state.fullName} </h1>
-                  <p></p>
-                   <p>
-                  <Button variant="primary" onClick={this.check}>Learn more</Button>
-                  </p>
-             </Jumbotron>
-            <Navbar className="text-center" bg="light">
-               <Navbar.Brand >
-                 <div >
-                 <h1 style={{fontFamily:"RalewayBold", textAlign:"center",maxWidth:"600px"   }}>Search Friend</h1>
-                 </div>
-                 </Navbar.Brand>
-             </Navbar>
-             <br></br>
-             <br></br>
-             <input type ="text" placeholder="Search Friend By Name" value={this.state.search} onChange={this.updateSearch} style={{height: "40px",  width:"990px",  }} />
-            <br></br>
+            <h1 style={ReactHeading}>Search  Friends</h1>
+             <input type ="text" style={mystyle} placeholder="Search Friend By Name" value={this.state.search} onChange={this.updateSearch}  />
             <br></br>
              <hr></hr>         
            {/* {peopleList2.map((people)=>{
@@ -295,7 +348,7 @@ class searchFriends extends Component{
               {/* {userNameList.map((people)=>{
                   return  <h3>{people.name}</h3>
               })} */}
-              { list }
+              { list2 }
           {/* {list2} */}
 
                 </div>

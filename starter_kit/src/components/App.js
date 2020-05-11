@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 //import logo from '../logo.png';
 import Web3 from 'web3';
 import {BrowserRouter,Route} from 'react-router-dom';
-import Jumbotron from 'react-bootstrap/Jumbotron'
+// import Jumbotron from 'react-bootstrap/Jumbotron'
 import './App.css';
 import Meme from '../abis/Meme.json';
-import { MDBCol, MDBInput } from "mdbreact";
+// import { MDBCol, MDBInput } from "mdbreact";
 import { Crypt, RSA } from 'hybrid-crypto-js';
 import Feed  from './Feed.js';
 import register from './register.js';
@@ -14,7 +14,7 @@ import MainPage from './MainPage.js';
 import addProfilePic from './addProfilePic.js';
 import checkRequest from './checkRequest.js';
 import searchFriends from './searchFriends.js';
-import { Form, Button, FormGroup, FormControl, ControlLabel,Card,ButtonToolbar } from "react-bootstrap";
+// import { Form, Button, FormGroup, FormControl, ControlLabel,Card,ButtonToolbar } from "react-bootstrap";
 var ipfsClient = require('ipfs-http-client');
 var ipfs = ipfsClient({host:'ipfs.infura.io',port:'5001',protocol: 'https' }) ;
 var crypt = new Crypt();
