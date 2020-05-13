@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
 import Web3 from 'web3';
 import Meme from '../abis/Meme.json';
-import { Form, Button, Container,Row,Col,Navbar,Nav,ListGroup } from "react-bootstrap";
-import Jumbotron from 'react-bootstrap/Jumbotron'
+import { Button,Navbar,Nav,ListGroup,Modal } from "react-bootstrap";
+import { MDBInput } from 'mdbreact';
+import './file.css'; 
+import ReactDOM from 'react-dom'
+import Files from 'react-files'
+
 var ipfsClient = require('ipfs-http-client');
 var ipfs = ipfsClient({host:'ipfs.infura.io',port:'5001',protocol: 'https' }) ;;
+
 
 class MainPage  extends Component{
 
@@ -21,6 +26,9 @@ class MainPage  extends Component{
           userJsonResultOfParticularUserFromIPFS:null,
           userBlockchainResultOfParticularUser:null,
           totalUser:null,
+          isVisible: false,
+          showModal:false,
+          buffer:null,
         };       
       }
 
@@ -30,6 +38,10 @@ class MainPage  extends Component{
         await this.loadBlockChainData();
       }
 
+      updateModal(isVisible) {
+        this.state.isVisible = isVisible;
+        this.forceUpdate();
+      }
       loadData=()=>{
         console.log("in load data");
        this.setState({fullName:this.props.location.fullName});
@@ -183,15 +195,178 @@ class MainPage  extends Component{
            // your data array of objects
         })
        }
+       openPostModel=()=>{
+         console.log("inside open");
+         this.setState({ showModal: true });
+       }
+       closePostModel=()=>{
+        console.log("inside close");
+        this.setState({ showModal: false });
+       }
+       getPostLink=()=>{
+        this.setState({ showModal: true });
+      }
+      captureFile=(event)=>{
+        console.log(ipfs );
+        event.preventDefault();
+        console.log("file is capture");
+        console.log(event);
+        console.log(event.target.files[0]);
+        var file = event.target.files[0];
+        var reader = new window.FileReader();
+        reader.readAsArrayBuffer(file);
+        
+  
+    
+        reader.onloadend = ()=>{
+          console.log(reader.result);
+          this.setState({buffer:Buffer(reader.result)})
+          console.log("buffer",Buffer(reader.result));
+        }
+        //process the file inside here 
+    }
+    actuallyPost=()=>{
+      window.open( 
+              "http://localhost:8888/Facebook-sdk/facebooksdk/?url?=http://localhost:3000/MainPage", "_blank"); 
+       
+    }
+
 
     render(){
       const mystyle = {
-        color: "white",
-        backgroundColor: "DodgerBlue",
+        padding: "20px",
+        fontFamily: "Arial",
+        cursor: "pointer",
+        borderStyle: "solid",
+        borderColor: "#365899",
+        fontSize:"20px",
+        textAlign: "center"
+       
+      };
+      const mystyle2 = {
         padding: "10px",
         fontFamily: "Arial",
-        cursor: "pointer"
+        cursor: "pointer",
+        borderStyle: "solid",
+        color:"while",
+        backgroundColor: "#365899",
+        color:"#fff"
       };
+      const mystyle3={
+        paddingLeft:"20px"
+      }
+
+      var cardStyle={
+        
+        padding:"10px 10px 10px 10px",
+        display:"flex",
+        flexDirection:"column",
+        alignItems:"center",
+       // width:"1000px 
+    }
+
+    var card={
+      boxShadow:"0px 0px 0.5px rgba(10,10,10,.3)",
+      alignItems:"center",
+      position:"relative",
+      userSelect:"none",
+      overflow:"hidden",
+      transition:"all .5s ease",
+      padding:"10px",
+      width:"850px",
+      height:"280px",
+      maxWidth:"100%",
+      backgroundColor:"white",
+      marginBottom:"10px",
+      fontSize:"14px",
+      borderRadius:"3px",
+      borderStyle: "solid",
+      borderColor: "#365899"
+    }
+    var card2={
+      boxShadow:"0px 0px 0.5px rgba(10,10,10,.3)",
+      alignItems:"center",
+      position:"relative",
+      userSelect:"none",
+      overflow:"hidden",
+      transition:"all .5s ease",
+      padding:"10px",
+      width:"950px",
+      height:"280px",
+      maxWidth:"100%",
+      backgroundColor:"white",
+      marginBottom:"10px",
+      fontSize:"14px",
+      borderRadius:"3px",
+     
+    }
+    var info={
+        display:"flex",
+        alignItems:"center",
+        height:"40px"
+      }
+      var photo={
+        height:"40px",
+        width:"40px",
+        backgroundColor:"gray",
+        opacity:".8",
+        borderRadius:"100%"
+      }
+    
+      var name={
+        
+          fontWeight:"bold",
+          color:"rgb(66, 103, 178)",
+          opacity:".9",
+          paddingLeft:"20px",
+      }
+      var username= {
+        margin:"15px 0",
+        padding:"15px 10px",
+        width:"100%",
+        outline:"none",
+        border:"1px solid #bbb",
+        borderRadius:"20px",
+        display:"inline-block",
+        fontSize:"20px"
+        
+      }
+      var addPost= {
+        float: "right",
+        background: "#365899",
+        border: "none",
+        color: "#fff",
+        fontWeight: "bold",
+        //padding: "10px 15px",
+        //borderRadius: "6px"
+      }
+      var modalPost= {
+     
+        background: "#365899",
+        border: "none",
+        color: "#fff",
+        fontWeight: "bold",
+        //padding: "10px 15px",
+        //borderRadius: "6px"
+      }
+
+      var modalBorder={
+        borderStyle: "solid",
+        borderColor: "#365899"
+      }
+      var fileUpload={
+        fontSize: "20px",
+        height:"40px",
+        color:"blue",
+        background: "#365899",
+        borderStyle: "solid",
+        borderColor: "#365899"
+      }
+      const modalStyle = {
+	overlay: {
+		backgroundColor: "rgba(0, 0, 0,0.5)"
+	}
+};
         // console.log("hello in main page");
         // console.log(this.props);
         // console.log(this.props.location.data['emailId'])
@@ -200,7 +375,7 @@ class MainPage  extends Component{
         // var t = 'Rutvik';
         //this.setState({displayEmailId:this.props.location.data['emailId']})
         //console.log(this.state.name);
-console.log("Name state object "+this.state.fullName);
+      console.log("Name state object "+this.state.fullName);
         return(
             <div>
                 <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous"></link>
@@ -223,7 +398,11 @@ console.log("Name state object "+this.state.fullName);
                         <Nav.Link ><Button variant="primary" onClick={this.checkFriendRequest}> <span className="fa fa-id-badge"></span>   Check Request</Button></Nav.Link>
                         <Nav.Link ><Button variant="outline-secondary" onClick={this.searchFriends}><span className=" fa fa-search"></span>  Search Friend</Button></Nav.Link>
                         </Nav>
-                    <Button variant="primary"  style={{marginRight: "10px" }}><span className="fa fa-id-badge"  ></span>  {this.state.fullName}</Button>
+                    <Button variant="primary"  style={{marginRight: "10px" }}>
+                    
+                     {this.state.fullName}
+                     
+                     </Button>
                     <Button Button variant="light" onClick={this.signOut} ><span class="fa fa-sign-out"></span> Log Out</Button>
                   
                 </Navbar.Collapse>
@@ -231,80 +410,78 @@ console.log("Name state object "+this.state.fullName);
 
                 <div>
                     <div className="row">
-                    <div className="col-2">
-                    <ListGroup>
-                        <ListGroup.Item style={{ fontWeight: "bold",cursor: "pointer"  }}><h4>{this.state.fullName}</h4></ListGroup.Item>
-                        <ListGroup.Item style={mystyle} ><h4>Friend List</h4></ListGroup.Item>
-                        <ListGroup.Item  >Add Profile Pic</ListGroup.Item>
+                    <div className="col-3">
+                      <div style={ mystyle3}>
+                      <ListGroup>
+                        <ListGroup.Item style={mystyle2}>
+                          <div className="row">
+                           
+                            <div className="col-2">
+                              <img style={photo} src={"https://scontent.fsac1-1.fna.fbcdn.net/v/t31.0-8/11951652_1816082501951513_7968710402511981212_o.jpg?_nc_cat=100&_nc_sid=09cbfe&_nc_ohc=ZpHVjI_jOdkAX8b8yFK&_nc_ht=scontent.fsac1-1.fna&oh=842fde38a2f75b6610bcc84024cf39a4&oe=5EE0FB2A"} ></img>
+                              </div>
+                              <div className="col-10">
+                              <span style={{fontSize:"20px"}}><h4>{this.state.fullName}</h4></span>
+                              </div>
+                                                        
+                          </div>
+                         
+                        </ListGroup.Item>
+                        <ListGroup.Item style={mystyle} >Friend List</ListGroup.Item>
+                        <ListGroup.Item style={mystyle}  >Add Profile Pic</ListGroup.Item>
                         <ListGroup.Item style={mystyle}>About</ListGroup.Item>
-                        <ListGroup.Item>Vestibulum at eros</ListGroup.Item>
-                  </ListGroup>
+                        <ListGroup.Item style={mystyle} >Vestibulum at eros</ListGroup.Item>
+                      </ListGroup>
+                      </div>
                     </div>
-                    <div className="col-8">
-                    <Jumbotron>
-                   <h1>Hello,{this.state.fullName} </h1>
-                  <p>
-                  
-                  </p>
-                   <p>
-                  {/* <Button variant="primary">Learn more</Button> */}
-                  </p>
-                  </Jumbotron>
+                    <div className="col-7">
+                    <div style={cardStyle}>
+                        <div style={card} expand="false">
+                          <div style={info}>
+                              <img style={photo} src={"https://scontent.fsac1-1.fna.fbcdn.net/v/t31.0-8/11951652_1816082501951513_7968710402511981212_o.jpg?_nc_cat=100&_nc_sid=09cbfe&_nc_ohc=ZpHVjI_jOdkAX8b8yFK&_nc_ht=scontent.fsac1-1.fna&oh=842fde38a2f75b6610bcc84024cf39a4&oe=5EE0FB2A"} ></img>
+                            <div style={name}><h4>{this.state.fullName}</h4></div>
+                          </div>
+                          <input type="text" style={username} name="username" placeholder="what's on your mind," required />  
+                          <hr></hr>
+                          <Button style={addPost}  onClick={this.openPostModel}>Add Post</Button>
+                        </div>
+                    </div>
                     </div>
                   </div>
                </div> 
 
-         
 
+            <Modal show={this.state.showModal} onHide={this.closePostModel} stye={modalBorder}  size="lg">
+                  <Modal.Header closeButton>
+                   <Modal.Title>Create Post</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                  <div style={cardStyle}>
+                          <div style={card2} expand="false">
+                            <div style={info}>
+                                <img style={photo} src={"https://scontent.fsac1-1.fna.fbcdn.net/v/t31.0-8/11951652_1816082501951513_7968710402511981212_o.jpg?_nc_cat=100&_nc_sid=09cbfe&_nc_ohc=ZpHVjI_jOdkAX8b8yFK&_nc_ht=scontent.fsac1-1.fna&oh=842fde38a2f75b6610bcc84024cf39a4&oe=5EE0FB2A"} ></img>
+                              <div style={name}><h4>{this.state.fullName}</h4></div>
+                            </div>
+                            <br></br>
+                            <MDBInput type="textarea"  rows="5" />     
+                          </div>
+                    </div>
+                    <div>
+                    <input type="file"  onChange={this.captureFile}/> 
+                    </div>
+   
+                    <hr></hr>
+                    <div style={{textAlign:"center"}}>
+                    <Button className="LogIn2" alt="#" onClick={this.actuallyPost}>
+                           Post
+                    </Button>
+                    </div>
+                    
+                  </Modal.Body>
+                  <Modal.Footer>
+                  <Button onClick={this.closePostModel}>Done</Button>
+                </Modal.Footer>
+              </Modal>
 
-  {/* <div className="container">
-                            <div>
-                <p></p>
-                <p></p>
-                <br></br>
-                <br></br>
-                <button variant="primary" type="button" onClick={this.signOut}>Sign out</button>
-                <p></p> 
-                <br></br>
-                  <Jumbotron>
-                   <h1>Hello,{this.state.fullName} </h1>
-                  <p>
-                  
-                  </p>
-                   <p>
-                  {/* <Button variant="primary">Learn more</Button> */}
-                  {/* </p> */}
-                  {/* </Jumbotron> */}
-
-          
-
-{/* 
-                  <Container>
-                    <Row>
-                      <Col> <Button variant="primary" onClick={this.addPost}>Add Post</Button></Col>
-                      <Col><Button variant="secondary" onClick={this.addFriend} >Add Friend</Button></Col>
-                      <Col> <Button variant="success" onClick={this.openTimeline}>Timeline</Button></Col>
-                     <Col><Button variant="primary" onClick={this.addProfilePic}>Add Profile Pic</Button></Col>
-                    </Row>
-                    <Row>
-                      <Col></Col>
-                      <Col><h4></h4></Col>
-                      <Col><h4></h4></Col>
-                      <Col><h4></h4></Col>
-                      <Col><h4></h4></Col>
-                    </Row>
-                    <Row>
-                      <Col><Button variant="primary" onClick={this.checkFriendRequest}>Check Request</Button></Col>
-                      <Col><Button variant="primary" onClick={this.searchFriends}>Find Friends</Button></Col>
-                      <Col><Button variant="primary" onClick={this.feed}>Feeds</Button></Col>
-                      <Col><Button variant="primary" onClick={this.friend}>Friends</Button></Col>
-                      <Col><Button variant="primary" onClick={this.checkValue}>Value</Button></Col>
-                    </Row>
-                   
-                  </Container>
-
-            </div> */}
-            {/* </div> */} 
             </div>
           
 
