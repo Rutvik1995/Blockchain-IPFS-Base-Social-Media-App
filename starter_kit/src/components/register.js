@@ -8,7 +8,7 @@ import Meme from '../abis/Meme.json';
 import { MDBCol, MDBInput } from "mdbreact";
 import { Crypt, RSA } from 'hybrid-crypto-js';
 import Feed  from './Feed.js';
-import { Form, Button, FormGroup, FormControl, ControlLabel,Card,ButtonToolbar } from "react-bootstrap";
+import { Form, Button,Card} from "react-bootstrap";
 
 var ipfsClient = require('ipfs-http-client');
 var ipfs = ipfsClient({host:'ipfs.infura.io',port:'5001',protocol: 'https' }) ;
@@ -168,7 +168,7 @@ class register extends Component {
         obj[emailId]="new EmailID";
         obj[privateKey]="private key";
         console.log(obj);
-        var stringObj=JSON.stringify(obj);     
+         stringObj=JSON.stringify(obj);     
         /////////********************** */
         var event = document.createEvent('Event');
          var event = new CustomEvent(
@@ -289,8 +289,8 @@ class register extends Component {
      handleClick2 = () => {
         /////////
         console.log("In message");
-        var publicKey;
-        var privateKey;
+       // var publicKey;
+        //var privateKey;
         console.log("Before function");
         var firstName=document.getElementById("firstName").value;
         var lastName =document.getElementById("lastName").value;
@@ -304,12 +304,14 @@ class register extends Component {
             "fullName":fullName,
             "password":password,
             "emailId":emailId,
-            profilePicHash:'',
+            profilePicHash:'https://previews.123rf.com/images/jemastock/jemastock1909/jemastock190907419/129419865-indian-young-boy-face-profile-picture-avatar-cartoon-character-portrait-in-black-and-white-vector-il.jpg',
             requestNotAccepted:[],
             request:[],
             memberOfGroup:[],
             ownerOfGroup:[],
-            friend:[]
+            friend:[],
+            groupVersion:0,
+            currentGroupKey:''
           };
         //This is the the data which is enter by the user 
         var userInformationHash;
