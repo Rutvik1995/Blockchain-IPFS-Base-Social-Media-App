@@ -6,18 +6,17 @@ import {BrowserRouter,Route} from 'react-router-dom';
 import './App.css';
 import Meme from '../abis/Meme.json';
 // import { MDBCol, MDBInput } from "mdbreact";
-import { Crypt, RSA } from 'hybrid-crypto-js';
-import Feed  from './Feed.js';
+import {  RSA } from 'hybrid-crypto-js';
 import register from './register.js';
 import login from './login.js';
 import MainPage from './MainPage.js';
 import addProfilePic from './addProfilePic.js';
 import checkRequest from './checkRequest.js';
 import searchFriends from './searchFriends.js';
+
 // import { Form, Button, FormGroup, FormControl, ControlLabel,Card,ButtonToolbar } from "react-bootstrap";
 var ipfsClient = require('ipfs-http-client');
 var ipfs = ipfsClient({host:'ipfs.infura.io',port:'5001',protocol: 'https' }) ;
-var crypt = new Crypt();
 var rsa = new RSA();
 class App extends Component {
 
@@ -43,7 +42,7 @@ class App extends Component {
       console.log(accounts);
       this.setState({account:accounts[0]})
       const networkId= await web3.eth.net.getId();
-      const networkData =Meme.networks[networkId];
+     // const networkData =Meme.networks[networkId];
       console.log(networkId);
 
       // if(networkId){
@@ -117,8 +116,7 @@ class App extends Component {
     });
     this.pausecomp(5500);
 
-    var publicKey;
-    var privateKey;
+    
       rsa.generateKeyPair(function(keyPair) {
               // Callback function receives new key pair as a first argument
             console.log(keyPair.publicKey);
@@ -136,7 +134,7 @@ class App extends Component {
     event.preventDefault();
     console.log("in submit event");
 
-    var name ="Rutvik";
+    
     var myObj = {
       "name":"John",
       "age":30,
