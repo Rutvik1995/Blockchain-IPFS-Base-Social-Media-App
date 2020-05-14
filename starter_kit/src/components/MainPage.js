@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Web3 from 'web3';
 import Meme from '../abis/Meme.json';
-import { Button,Navbar,Nav,ListGroup,Modal } from "react-bootstrap";
+import { Button,Navbar,Nav,ListGroup,Modal,Card } from "react-bootstrap";
 import { MDBInput } from 'mdbreact';
 import './file.css'; 
 import ReactDOM from 'react-dom'
@@ -28,7 +28,9 @@ class MainPage  extends Component{
           totalUser:null,
           isVisible: false,
           showModal:false,
+          profilePicModal:false,
           buffer:null,
+          profilePicBuffer:''
         };       
       }
 
@@ -157,19 +159,8 @@ class MainPage  extends Component{
           name: this.props.location.name   // your data array of objects
         })
        }
-       addProfilePic=()=>{
-        this.props.history.push({
-          pathname: '/addProfilePic',
-          userEmailId: this.state.userEmailId,
-          fullName:  this.state. fullName,
-          userJsonResultOfParticularUserFromIPFS:this.state.userJsonResultOfParticularUserFromIPFS,
-          totalUser:this.state.totalUser,
-          userBlockchainResultOfParticularUser:this.state.userBlockchainResultOfParticularUser
-        })
 
-
-     
-       }
+       
        searchFriends=()=>{
         console.log("in people");
         this.props.history.push({
@@ -195,6 +186,19 @@ class MainPage  extends Component{
            // your data array of objects
         })
        }
+       addProfilePic=()=>{
+        // this.props.history.push({
+        //   pathname: '/addProfilePic',
+        //   userEmailId: this.state.userEmailId,
+        //   fullName:  this.state. fullName,
+        //   userJsonResultOfParticularUserFromIPFS:this.state.userJsonResultOfParticularUserFromIPFS,
+        //   totalUser:this.state.totalUser,
+        //   userBlockchainResultOfParticularUser:this.state.userBlockchainResultOfParticularUser
+        // })
+
+        this.setState({profilePicModal : true });
+     
+       }
        openPostModel=()=>{
          console.log("inside open");
          this.setState({ showModal: true });
@@ -203,10 +207,14 @@ class MainPage  extends Component{
         console.log("inside close");
         this.setState({ showModal: false });
        }
+       closeProfilPicModel=()=>{
+        console.log("inside close");
+        this.setState({ profilePicModal: false });
+       }
        getPostLink=()=>{
         this.setState({ showModal: true });
       }
-      captureFile=(event)=>{
+      captureProfilePicFile=(event)=>{
         console.log(ipfs );
         event.preventDefault();
         console.log("file is capture");
@@ -214,17 +222,80 @@ class MainPage  extends Component{
         console.log(event.target.files[0]);
         var file = event.target.files[0];
         var reader = new window.FileReader();
-        reader.readAsArrayBuffer(file);
-        
-  
-    
+        reader.readAsArrayBuffer(file);  
         reader.onloadend = ()=>{
           console.log(reader.result);
-          this.setState({buffer:Buffer(reader.result)})
+          this.setState({profilePicBuffer:Buffer(reader.result)})
           console.log("buffer",Buffer(reader.result));
         }
         //process the file inside here 
     }
+    uploadProfilePic=()=>{
+      console.log("uploadProfilePic");
+     // event.preventDefault();
+      console.log("in submit event");
+      const file = {
+         content: this.state.profilePicBuffer
+         //content:this.
+      }
+      var t;
+      ipfs.add(file,(error,results)=>{
+          //Do Stuff here
+         console.log("IPFS RESULT",results[0].hash);
+          var hash=results[0].hash;
+          t=results[0].hash;
+          var url ="https://ipfs.infura.io/ipfs/";
+          var url2=t;
+          var third=url+url2;
+          console.log(third);
+          this.state.userJsonResultOfParticularUserFromIPFS.profilePicHash=third;
+          console.log(this.state.userJsonResultOfParticularUserFromIPFS.profilePicHash);
+          this.setState({urlhash:t});
+          if(error){
+            console.log(error);
+            return;
+          }
+          var content;
+          ipfs.get("/ipfs/"+t,(error,result)=>{
+            console.log(result[0].path);
+            content=result[0].content;
+          })
+   
+          //Step 2 is to store file on blockchain
+          this.filesrc="http://localhost:8080/ipfs/"+hash;
+          console.log("https://ipfs.infura.io/ipfs/"+hash);
+          console.log(this.filesrc);
+          this.setState({profilePicHash:hash});
+
+          var userId=   this.state.userBlockchainResultOfParticularUser.userId;
+          var myObj=this.state.userJsonResultOfParticularUserFromIPFS;
+          console.log(myObj);
+          var originalContentString = Buffer.from(JSON.stringify(myObj));
+            // The json is change to string format 
+            const userContent= {
+              content:originalContentString
+          }
+          
+          ipfs.add(userContent,(error,results)=>{
+            console.log(results);
+            var userInformationHash= results[0].hash;
+           // this.setState({userJsonResultOfParticularUserFromIPFS:userInformationHash});
+          //console.log(this.state.userJsonResultOfParticularUserFromIPFS);
+            console.log(results[0].hash);
+            this.setState({IPFSuserInformationHash:results[0].hash});   
+            this.state.userBlockchainResultOfParticularUser.userHash=results[0].hash;
+            console.log(userId);          
+               this.state.contract.methods.changeUserInformation(userId,userInformationHash).send({from: this.state.account}).then((r)=>{
+                  console.log(r);
+              });  
+              this.state.userBlockchainResultOfParticularUser.userHash=userInformationHash;
+              console.log(this.state.userBlockchainResultOfParticularUser.userHash);
+          });
+
+        })
+    }
+
+
     actuallyPost=()=>{
       window.open( 
               "http://localhost:8888/Facebook-sdk/facebooksdk/?url?=http://localhost:3000/MainPage", "_blank"); 
@@ -264,6 +335,15 @@ class MainPage  extends Component{
         alignItems:"center",
        // width:"1000px 
     }
+    var cardStyle2={
+        
+      padding:"10px 10px 10px 10px",
+      display:"flex",
+      flexDirection:"column",
+      alignItems:"center",
+      textAlign:"center"
+     // width:"1000px 
+  }
 
     var card={
       boxShadow:"0px 0px 0.5px rgba(10,10,10,.3)",
@@ -391,19 +471,19 @@ class MainPage  extends Component{
                  </nav>
                  <br></br>
                 <Navbar bg="light" expand="lg">
-                    <Navbar.Brand href="#home"><img  src={"https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQtRwMIKUhJfgz64gGRnrGmgHWdPsnP4zv_HlocpHesF_3BM8Aw&usqp=CAU"}  style={{height: "100%",  width:"70px" }} alt="" className="img-responsive" /></Navbar.Brand>
+                    <Navbar.Brand href="#home"><img  src={this.state.userJsonResultOfParticularUserFromIPFS.profilePicHash}  style={{height: "100%",  width:"70px" }} alt="" className="img-responsive" /></Navbar.Brand>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="mr-auto">
-                        <Nav.Link ><Button variant="primary" onClick={this.checkFriendRequest}> <span className="fa fa-id-badge"></span>   Check Request</Button></Nav.Link>
+                        <Nav.Link ><Button variant="primary" style={{background:"#365899"}} onClick={this.checkFriendRequest}> <span className="fa fa-id-badge"></span>   Check Request</Button></Nav.Link>
                         <Nav.Link ><Button variant="outline-secondary" onClick={this.searchFriends}><span className=" fa fa-search"></span>  Search Friend</Button></Nav.Link>
                         </Nav>
-                    <Button variant="primary"  style={{marginRight: "10px" }}>
+                    <Button variant="primary"  style={{marginRight: "10px",background:"#365899" }}>
                     
                      {this.state.fullName}
                      
                      </Button>
-                    <Button Button variant="light" onClick={this.signOut} ><span class="fa fa-sign-out"></span> Log Out</Button>
+                    <Button Button variant="light"  onClick={this.signOut} ><span class="fa fa-sign-out"></span> Log Out</Button>
                   
                 </Navbar.Collapse>
                 </Navbar>
@@ -417,7 +497,7 @@ class MainPage  extends Component{
                           <div className="row">
                            
                             <div className="col-2">
-                              <img style={photo} src={"https://scontent.fsac1-1.fna.fbcdn.net/v/t31.0-8/11951652_1816082501951513_7968710402511981212_o.jpg?_nc_cat=100&_nc_sid=09cbfe&_nc_ohc=ZpHVjI_jOdkAX8b8yFK&_nc_ht=scontent.fsac1-1.fna&oh=842fde38a2f75b6610bcc84024cf39a4&oe=5EE0FB2A"} ></img>
+                              <img style={photo}  src= {this.state.userJsonResultOfParticularUserFromIPFS.profilePicHash} ></img>
                               </div>
                               <div className="col-10">
                               <span style={{fontSize:"20px"}}><h4>{this.state.fullName}</h4></span>
@@ -427,7 +507,7 @@ class MainPage  extends Component{
                          
                         </ListGroup.Item>
                         <ListGroup.Item style={mystyle} >Friend List</ListGroup.Item>
-                        <ListGroup.Item style={mystyle}  >Add Profile Pic</ListGroup.Item>
+                        <ListGroup.Item style={mystyle} onClick={this.addProfilePic} >Add Profile Pic</ListGroup.Item>
                         <ListGroup.Item style={mystyle}>About</ListGroup.Item>
                         <ListGroup.Item style={mystyle} >Vestibulum at eros</ListGroup.Item>
                       </ListGroup>
@@ -437,7 +517,7 @@ class MainPage  extends Component{
                     <div style={cardStyle}>
                         <div style={card} expand="false">
                           <div style={info}>
-                              <img style={photo} src={"https://scontent.fsac1-1.fna.fbcdn.net/v/t31.0-8/11951652_1816082501951513_7968710402511981212_o.jpg?_nc_cat=100&_nc_sid=09cbfe&_nc_ohc=ZpHVjI_jOdkAX8b8yFK&_nc_ht=scontent.fsac1-1.fna&oh=842fde38a2f75b6610bcc84024cf39a4&oe=5EE0FB2A"} ></img>
+                              <img style={photo} src={this.state.userJsonResultOfParticularUserFromIPFS.profilePicHash} ></img>
                             <div style={name}><h4>{this.state.fullName}</h4></div>
                           </div>
                           <input type="text" style={username} name="username" placeholder="what's on your mind," required />  
@@ -450,15 +530,60 @@ class MainPage  extends Component{
                </div> 
 
 
-            <Modal show={this.state.showModal} onHide={this.closePostModel} stye={modalBorder}  size="lg">
+   
+         
+
+          <Modal show={this.state.profilePicModal} onHide={this.closeProfilPicModel}  size="lg">
                   <Modal.Header closeButton>
-                   <Modal.Title>Create Post</Modal.Title>
+                    <Modal.Title style={{color:"#205663", paddingLeft:"310px"}}>Add Profile Pic</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                  <div style={cardStyle2}>
+                          <div style={card2} expand="false">
+                            <div style={info}>
+                                <img style={photo} src={this.state.userJsonResultOfParticularUserFromIPFS.profilePicHash} ></img>
+                              <div style={name}><h4>{this.state.fullName}</h4></div>
+                              <div style={{textAlign:"center", marginTop:"280px"}} >
+                               <img src={this.state.userJsonResultOfParticularUserFromIPFS.profilePicHash}  style={{height: "100%",  width:"300px" }}></img>
+                             </div>
+                            </div>
+                          </div>
+                    </div>
+                   
+                     
+                    <div>
+                    <input type="file" onChange={this.captureProfilePicFile}/> 
+                    </div>
+   
+                    <hr></hr>
+                    <div style={{textAlign:"center"}}>
+                    <Button className="LogIn2" onClick={this.uploadProfilePic}>
+                           Upload
+                    </Button>
+                    </div>
+                    
+                  </Modal.Body>
+                  <Modal.Footer>
+                  <Button onClick={this.closeProfilPicModel}>Done</Button>
+                </Modal.Footer>
+              </Modal>
+
+
+
+
+          
+
+
+
+              <Modal show={this.state.showModal} onHide={this.closePostModel} stye={modalBorder}  size="lg">
+                  <Modal.Header closeButton>
+                   <Modal.Title  style={{textAlign:"center"}} > Create Post</Modal.Title>
                   </Modal.Header>
                   <Modal.Body>
                   <div style={cardStyle}>
                           <div style={card2} expand="false">
                             <div style={info}>
-                                <img style={photo} src={"https://scontent.fsac1-1.fna.fbcdn.net/v/t31.0-8/11951652_1816082501951513_7968710402511981212_o.jpg?_nc_cat=100&_nc_sid=09cbfe&_nc_ohc=ZpHVjI_jOdkAX8b8yFK&_nc_ht=scontent.fsac1-1.fna&oh=842fde38a2f75b6610bcc84024cf39a4&oe=5EE0FB2A"} ></img>
+                                <img style={photo} src={this.state.userJsonResultOfParticularUserFromIPFS.profilePicHash} ></img>
                               <div style={name}><h4>{this.state.fullName}</h4></div>
                             </div>
                             <br></br>
@@ -475,12 +600,13 @@ class MainPage  extends Component{
                            Post
                     </Button>
                     </div>
-                    
                   </Modal.Body>
                   <Modal.Footer>
                   <Button onClick={this.closePostModel}>Done</Button>
                 </Modal.Footer>
               </Modal>
+
+
 
             </div>
           
