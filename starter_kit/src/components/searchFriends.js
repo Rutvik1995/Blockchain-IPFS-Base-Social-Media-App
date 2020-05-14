@@ -26,7 +26,7 @@ class searchFriends extends Component{
           profilePicHash:'',
           userNameList:null,
           userBlockchainResultOfParticularUser:null,
-          hasError: false 
+          hasError: false,
         };       
       }
 
@@ -77,14 +77,20 @@ class searchFriends extends Component{
            console.log(userJsonResult);
            var obj={
              name: userJsonResult.fullName,
-             emailId:userJsonResult.emailId
+             emailId:userJsonResult.emailId,
+             profilePicHash:userJsonResult.profilePicHash
            }
            this.state.totalUserName.push(obj);
            });
        }
        console.log(this.state.totalUserName);   
      }
+
+     
+
      mainPage=()=>{
+      console.log(this.state.userJsonResultOfParticularUserFromIPFS);
+      console.log(this.state.userBlockchainResultOfParticularUser);
 
       this.props.history.push({
         pathname: '/MainPage',
@@ -94,7 +100,7 @@ class searchFriends extends Component{
         totalUser:this.state.totalUser,
         userBlockchainResultOfParticularUser:this.state.userBlockchainResultOfParticularUser
       })
-       console.log(this.state.userJsonResultOfParticularUserFromIPFS);
+      
      }
 
      async loadWeb3(){
@@ -138,13 +144,18 @@ class searchFriends extends Component{
         }
       }
 
- 
+      signOut=()=>{
+        this.props.history.push({
+          pathname: '/login',
+           // your data array of objects
+        })
+       }
       updateSearch=(event)=>{
      //  console.log(event.target.value);
        this.setState({search:event.target.value.substr(0,20)})      
       }
       addFriend=(dataParse)=>{
-        
+        console.log(dataParse);
         //console.log(this.state.userHash);
         var userHash;
         var userId;
@@ -169,7 +180,8 @@ class searchFriends extends Component{
           var obj={
             userId:this.state.userBlockchainResultOfParticularUser.userId,
             name:this.state.fullName,
-            emailId:this.state.userEmailId
+            emailId:this.state.userEmailId,
+            profilePicHash:this.state.userJsonResultOfParticularUserFromIPFS.profilePicHash
           }
           userJsonResult.requestNotAccepted.push(obj);
           console.log(userJsonResult);
@@ -205,7 +217,8 @@ class searchFriends extends Component{
           var obj={
             userId:userId,
             name:dataParse.name,
-            emailId:dataParse.emailId
+            emailId:dataParse.emailId,
+            profilePicHash:dataParse.profilePicHash
           }
           userJsonResult.request.push(obj);
           console.log(userJsonResult);
@@ -221,10 +234,24 @@ class searchFriends extends Component{
           var userInformationHash= results[0].hash;
           console.log(results[0].hash);  
           console.log(this.state.userBlockchainResultOfParticularUser.userId); 
+          this.state.userBlockchainResultOfParticularUser.userHash=results[0].hash;
           var id= this.state.userBlockchainResultOfParticularUser.userId;
              this.state.contract.methods.changeUserInformation(id,userInformationHash).send({from: this.state.account}).then((r)=>{
                 console.log(r);
             });
+            console.log(this.state.userJsonResultOfParticularUserFromIPFS);
+            console.log(this.state.userBlockchainResultOfParticularUser);
+            this.props.history.push({
+              pathname: '/MainPage',
+              userEmailId:this.state.userEmailId,
+              fullName:this.state.fullName,
+              userJsonResultOfParticularUserFromIPFS:this.state.userJsonResultOfParticularUserFromIPFS,
+              totalUser:this.state.totalUser,
+              userBlockchainResultOfParticularUser:this.state.userBlockchainResultOfParticularUser
+                // your data array of objects
+            })
+
+
           });
         });
 
@@ -246,16 +273,16 @@ class searchFriends extends Component{
         const mystyle = {
           textAlign: "center",
           font: "inherit",
-          border: "6px solid #a3d8d6",
+          border: "2px solid #365899",
           padding: "13px 12px",
           fontSize: "15px",
           boxShadow: "0 1px 1px #DDD",
-          width: " 900px",
+          width: " 700px",
           outline: "none",
           display: "block",
           color: "#788585",
           margin: "0 auto 20px",
-          height:"60px"
+          height:"50px"
           // color: "white",
           // backgroundColor: "DodgerBlue",
           // padding: "10px",
@@ -263,11 +290,25 @@ class searchFriends extends Component{
           // cursor: "pointer"
          
         };
-        const ReactHeading= 
-        {textAlign: "center",
-         padding: "50px",
+        const ReactHeading= {
+        // {textAlign: "center",
+        //  padding: "50px",
+        // textTransform: "uppercase",
+         //color: "DodgerBlue",
+         color:"#365899",
+        fontSize: "25px",
         textTransform: "uppercase",
-        color: "DodgerBlue"
+        fontWeight: "300",
+        textAlign: "center",
+        marginBottom: "15px",
+        paddingBottom:"20px",
+        fontFamily:"RalewayBold,Arial,sans-serif"
+      }
+      const cardBorder={
+      padding: "10px",
+      margin:"10px",
+      border: "2px solid #365899",
+      
       }
        
 
@@ -277,22 +318,22 @@ class searchFriends extends Component{
           }
         );
         let list = userNameList.map(people => 
-          <Card    style={{padding: "50px" }} >
+          <Card     >
           {/* <Card.Header>Rutvik Patel</Card.Header> */}
-         <Card.Title style={{color: "#639407", fontWeight: "1200"  }} >{people.name}</Card.Title>
-          <Card.Body>
+         <Card.Title style={{color: "#639407", fontWeight: "1200"   }} >{people.name}</Card.Title>
+          <Card.Body  >
             <Card.Link  style={{color: "#057396", fontWeight: "bold",cursor: "pointer"  }} onClick={() => this.addFriend(people)}>Add Friend</Card.Link>
             <Card.Link  style={{color: "#82360d", fontWeight: "bold",cursor: "pointer"  }}  >View Profile</Card.Link>
           </Card.Body>
         </Card>
         );
        let list2 = userNameList.map(people => 
-        <Card>
+        <Card style={cardBorder}>
   <Card.Body>
   <div className="container">
             <div className="box media">
           <figure className="image is-96x96 media-left">
-            <img src={'https://ipfs.infura.io/ipfs/QmYah59VfHQTNPnhk1f5hwnVqkxRC6CB9xvMjzLro9VBsw'} style={{height: "100%",  width:"200px" }} alt={"Rutvik"} />
+            <img src={people.profilePicHash} style={{height: "100%",  width:"150px" }} alt={"Rutvik"} />
           </figure>
           <div className="media-content">
             {/* <p className="subtitle"><b><h4>{people.name}</h4></b></p> */}
@@ -328,16 +369,16 @@ class searchFriends extends Component{
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="mr-auto">
-                        <Nav.Link ><Button variant="primary" onClick={this.mainPage}> <span className="fa fa-backward"></span> Main Page</Button></Nav.Link>
+                        <Nav.Link ><Button variant="primary" style={{background:"#365899"}} onClick={this.mainPage}> <span className="fa fa-backward"></span> Main Page</Button></Nav.Link>
                         {/* <Nav.Link ><Button variant="outline-secondary" onClick={this.searchFriends}><span className=" fa fa-search"></span>  Search Friend</Button></Nav.Link> */}
                         </Nav>
-                    <Button variant="primary"  style={{marginRight: "10px" }}><span className="fa fa-id-badge"  ></span>  {this.state.fullName}</Button>
+                    <Button variant="primary"  style={{marginRight: "10px",background:"#365899" }}><span className="fa fa-id-badge"  ></span>  {this.state.fullName}</Button>
                     <Button Button variant="light" onClick={this.signOut} ><span class="fa fa-sign-out"></span> Log Out</Button>
                 </Navbar.Collapse>
                 </Navbar>
 
             <div className="container text-center ">
-            <h1 style={ReactHeading}>Search  Friends</h1>
+            <h2 style={ReactHeading}>Search Friends</h2>
              <input type ="text" style={mystyle} placeholder="Search Friend By Name" value={this.state.search} onChange={this.updateSearch}  />
             <br></br>
              <hr></hr>         
