@@ -6,6 +6,7 @@ import { MDBInput } from 'mdbreact';
 import './file.css'; 
 import ReactDOM from 'react-dom'
 import Files from 'react-files'
+var CryptoJS = require("crypto-js");
 
 var ipfsClient = require('ipfs-http-client');
 var ipfs = ipfsClient({host:'ipfs.infura.io',port:'5001',protocol: 'https' }) ;;
@@ -30,7 +31,9 @@ class MainPage  extends Component{
           showModal:false,
           profilePicModal:false,
           buffer:null,
-          profilePicBuffer:''
+          profilePicBuffer:'',
+          postPicBuffer:'',
+          groupInformationListFromBlockChain:[]
         };       
       }
 
@@ -82,6 +85,25 @@ class MainPage  extends Component{
           this.setState({contract:contract});
           console.log(contract.methods);
         //  const MemeHash =await contract.methods.get().call();
+
+
+          var tt= await this.state.contract.methods.groupCount().call();
+          var groupCount=await tt;
+          groupCount=groupCount.toString();
+          console.log("group Count");
+          console.log(groupCount);
+          for(var i=1;i<=groupCount;i++){
+            const groupInformationListFromBlockChain= await this.state.contract.methods.groupInformation(i).call();
+            console.log(groupInformationListFromBlockChain)
+            if(groupInformationListFromBlockChain.groupEmailId==this.state.userEmailId){
+              this.setState({
+                groupInformationListFromBlockChain:[...this.state.groupInformationListFromBlockChain, groupInformationListFromBlockChain]
+             })
+            }
+            
+          }
+
+
         }
         else{
           window.alert("Smart contract not deployed to detected the network");
@@ -230,6 +252,23 @@ class MainPage  extends Component{
         }
         //process the file inside here 
     }
+
+    capturePostFile=(event)=>{
+      console.log(ipfs );
+        event.preventDefault();
+        console.log("file is capture");
+        console.log(event);
+        console.log(event.target.files[0]);
+        var file = event.target.files[0];
+        var reader = new window.FileReader();
+        reader.readAsArrayBuffer(file);  
+        reader.onloadend = ()=>{
+          console.log(reader.result);
+          this.setState({postPicBuffer:Buffer(reader.result)})
+          console.log("buffer",Buffer(reader.result));
+        }   
+    }
+
     uploadProfilePic=()=>{
       console.log("uploadProfilePic");
      // event.preventDefault();
@@ -296,7 +335,139 @@ class MainPage  extends Component{
     }
 
 
+
+    makeid=(length)=>{
+      var result           = '';
+      var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      var charactersLength = characters.length;
+      for ( var i = 0; i < length; i++ ) {
+         result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      }
+      return result;
+   }
+
+
+   getFriends=()=>{
+     console.log(this.state.userJsonResultOfParticularUserFromIPFS);
+     var arrayData=this.state.userJsonResultOfParticularUserFromIPFS.friend;
+     for(var i=0;i<arrayData.length;i++){
+      console.log(arrayData[i]);
+     }
+     console.log(this.state.groupInformationListFromBlockChain)
+     let myMap = new Map();
+     var max=-1;
+     for(var i=0;i<this.state.groupInformationListFromBlockChain.length;i++){
+       
+      var value=this.state.groupInformationListFromBlockChain[i].groupVersion;
+      value=value.toString();
+      myMap.set(value,this.state.groupInformationListFromBlockChain[i]);
+      console.log(value);
+      if(value>max){
+        max=value;
+      }
+     }
+     console.log("lastest group version is");
+     console.log(max);
+     console.log(myMap.get(max));
+   }
+
+
     actuallyPost=()=>{
+
+      var postText=document.getElementById("postTextArea").value;
+      var sessionKey=this.makeid(20);
+      console.log(postText);
+      var postTextHash;
+      var postPicHash;
+      var postHash;
+    //This is the the data which is enter by the user 
+    var userInformationHash;
+    var originalContentString = Buffer.from(JSON.stringify(postText));
+      // The json is change to string format 
+      const userContent= {
+        content:originalContentString
+    }
+    ipfs.add(userContent,(error,results)=>{
+              console.log(results);
+              userInformationHash= results[0].hash;
+              console.log(results[0].hash);
+              postTextHash=results[0].hash;
+              console.log(postTextHash)
+            const file = {
+              content: this.state.postPicBuffer
+              //content:this.
+          }
+      var t;
+      ipfs.add(file,(error,results)=>{
+       //Do Stuff here
+      console.log("IPFS RESULT",results[0].hash);
+       var hash=results[0].hash;
+       t=results[0].hash;
+       var url ="https://ipfs.infura.io/ipfs/";
+       var url2=t;
+       var third=url+url2;
+       postPicHash=results[0].hash;
+       console.log("third");
+       console.log(third);
+       if(error){
+         console.log(error);
+         return;
+       }
+       var content;
+       ipfs.get("/ipfs/"+t,(error,result)=>{
+         console.log(result[0].path);
+         content=result[0].content;
+       })
+       //Step 2 is to store file on blockchain
+       this.filesrc="http://localhost:8080/ipfs/"+hash;
+       console.log("https://ipfs.infura.io/ipfs/"+hash);
+
+            var myObj = {
+              "postTextHash":postTextHash,
+              "postPicHash":postPicHash  
+            };
+          //This is the the data which is enter by the user 
+          
+          console.log(myObj);
+          console.log(this.state.chromeExtensionData);
+          var originalContentString = Buffer.from(JSON.stringify(myObj));
+            // The json is change to string format 
+            const userContent= {
+              content:originalContentString
+          }
+         
+          ipfs.add(userContent,(error,results)=>{
+            console.log(results);
+            postHash= results[0].hash;
+            console.log(postHash);
+            console.log(this.state.fullName);
+            console.log(this.state.userBlockchainResultOfParticularUser);
+            console.log(this.state.userJsonResultOfParticularUserFromIPFS);
+            console.log(sessionKey);
+            
+            console.log("this is encrypted posh hahs");
+            var encryptedPostHash= CryptoJS.AES.encrypt(postHash, sessionKey).toString();
+            var bytes  = CryptoJS.AES.decrypt(encryptedPostHash, sessionKey);
+            var originalText = bytes.toString(CryptoJS.enc.Utf8);
+            console.log(originalText); // 'my message'
+
+          });
+         
+          // var userObj={
+          //   postOwner:this.state.fullName,
+          //   postHash:postHash,
+          //   sessionKey:sessionKey,
+            
+          // }
+
+     })
+
+
+
+  });
+
+
+
       window.open( 
               "http://localhost:8888/Facebook-sdk/facebooksdk/?url?=http://localhost:3000/MainPage", "_blank"); 
        
@@ -506,7 +677,7 @@ class MainPage  extends Component{
                           </div>
                          
                         </ListGroup.Item>
-                        <ListGroup.Item style={mystyle} >Friend List</ListGroup.Item>
+                        <ListGroup.Item style={mystyle} onClick={this.getFriends} >Friend List</ListGroup.Item>
                         <ListGroup.Item style={mystyle} onClick={this.addProfilePic} >Add Profile Pic</ListGroup.Item>
                         <ListGroup.Item style={mystyle}>About</ListGroup.Item>
                         <ListGroup.Item style={mystyle} >Vestibulum at eros</ListGroup.Item>
@@ -535,7 +706,7 @@ class MainPage  extends Component{
 
           <Modal show={this.state.profilePicModal} onHide={this.closeProfilPicModel}  size="lg">
                   <Modal.Header closeButton>
-                    <Modal.Title style={{color:"#205663", paddingLeft:"310px"}}>Add Profile Pic</Modal.Title>
+                    <Modal.Title style={{color:"#205663", paddingLeft:"310px"}}>Add Profile Picture</Modal.Title>
                   </Modal.Header>
                   <Modal.Body>
                   <div style={cardStyle2}>
@@ -587,11 +758,11 @@ class MainPage  extends Component{
                               <div style={name}><h4>{this.state.fullName}</h4></div>
                             </div>
                             <br></br>
-                            <MDBInput type="textarea"  rows="5" />     
+                            <MDBInput type="textarea"  id="postTextArea" rows="5" />     
                           </div>
                     </div>
                     <div>
-                    <input type="file"  onChange={this.captureFile}/> 
+                    <input type="file"  onChange={this.capturePostFile}/> 
                     </div>
    
                     <hr></hr>
