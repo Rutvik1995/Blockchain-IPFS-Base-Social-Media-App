@@ -33,7 +33,8 @@ class MainPage  extends Component{
           buffer:null,
           profilePicBuffer:'',
           postPicBuffer:'',
-          groupInformationListFromBlockChain:[]
+          groupInformationListFromBlockChain:[],
+          groupInformationPassParameter:''
         };       
       }
 
@@ -102,6 +103,49 @@ class MainPage  extends Component{
             }
             
           }
+          ////
+
+          console.log(this.state.userJsonResultOfParticularUserFromIPFS);
+          var arrayData=this.state.userJsonResultOfParticularUserFromIPFS.friend;
+          for(var i=0;i<arrayData.length;i++){
+           console.log(arrayData[i]);
+          }
+          console.log(this.state.groupInformationListFromBlockChain)
+          let myMap = new Map();
+          var max=-1;
+          for(var i=0;i<this.state.groupInformationListFromBlockChain.length;i++){
+            
+           var value=this.state.groupInformationListFromBlockChain[i].groupVersion;
+           value=value.toString();
+           myMap.set(value,this.state.groupInformationListFromBlockChain[i]);
+           console.log(value);
+           if(value>max){
+             max=value;
+           }
+          }
+          console.log("lastest group version is");
+          console.log(max);
+          console.log(myMap.get(max));
+          var lastestGroupDetailHash= myMap.get(max);
+          console.log(lastestGroupDetailHash);
+         
+         if(max!=-1){
+          var t= lastestGroupDetailHash.groupHash;
+          var content;
+          ipfs.get("/ipfs/"+t,(error,result)=>{
+            console.log(result[0].path);
+            content=result[0].content;
+            console.log(content);
+           var groupData=JSON.parse(content);
+           console.log(groupData);
+           
+           this.setState({ groupInformationPassParameter:groupData})
+           console.log(this.state.groupInformationPassParameter);
+          })
+         }
+
+
+
 
 
         }
@@ -253,6 +297,9 @@ class MainPage  extends Component{
         //process the file inside here 
     }
 
+
+  
+
     capturePostFile=(event)=>{
       console.log(ipfs );
         event.preventDefault();
@@ -369,8 +416,31 @@ class MainPage  extends Component{
      console.log("lastest group version is");
      console.log(max);
      console.log(myMap.get(max));
+     var lastestGroupDetailHash= myMap.get(max);
+
+    var t= lastestGroupDetailHash.groupHash;
+     var content;
+       ipfs.get("/ipfs/"+t,(error,result)=>{
+         console.log(result[0].path);
+         content=result[0].content;
+         console.log(content);
+        var groupData=JSON.parse(content);
+        console.log(groupData);
+        
+        this.setState({ groupInformationPassParameter:groupData})
+        console.log(this.state.groupInformationPassParameter);
+       })
+       
+
    }
 
+
+ 
+
+   about=()=>{
+    console.log("outside the loop");
+    console.log(this.state.groupInformationPassParameter);
+  }
 
     actuallyPost=()=>{
 
@@ -445,12 +515,37 @@ class MainPage  extends Component{
             console.log(this.state.userJsonResultOfParticularUserFromIPFS);
             console.log(sessionKey);
             
+
+
             console.log("this is encrypted posh hahs");
             var encryptedPostHash= CryptoJS.AES.encrypt(postHash, sessionKey).toString();
             var bytes  = CryptoJS.AES.decrypt(encryptedPostHash, sessionKey);
             var originalText = bytes.toString(CryptoJS.enc.Utf8);
             console.log(originalText); // 'my message'
-
+            var arrayData=this.state.groupInformationPassParameter.groupDetails;
+            console.log(arrayData);
+            var userObj={
+              postOwner:this.state.fullName,
+              postHash:postHash,
+              sessionKey:sessionKey,
+              encryptedPostHash:encryptedPostHash
+              
+            }
+            var sessionKeyDetails=[]; 
+            for(var i=0;i<arrayData.length;i++){
+              console.log(arrayData[i]);
+              var encryptedUserSession= CryptoJS.AES.encrypt(sessionKey, arrayData[i].encryptedGroupkey).toString();
+              var userObj={
+                emailId:arrayData[i].emailId,
+                encryptedUserSession:encryptedUserSession,
+                userHash:arrayData.userHash
+              }
+              sessionKeyDetails.push(userObj);
+            }
+            userObj.sessionKeyDetails=sessionKeyDetails;
+            console.log(sessionKeyDetails);
+            console.log("Json data");
+            console.log(userObj);
           });
          
           // var userObj={
@@ -679,7 +774,7 @@ class MainPage  extends Component{
                         </ListGroup.Item>
                         <ListGroup.Item style={mystyle} onClick={this.getFriends} >Friend List</ListGroup.Item>
                         <ListGroup.Item style={mystyle} onClick={this.addProfilePic} >Add Profile Pic</ListGroup.Item>
-                        <ListGroup.Item style={mystyle}>About</ListGroup.Item>
+                        <ListGroup.Item style={mystyle} onClick={this.about}>About</ListGroup.Item>
                         <ListGroup.Item style={mystyle} >Vestibulum at eros</ListGroup.Item>
                       </ListGroup>
                       </div>
