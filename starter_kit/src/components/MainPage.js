@@ -392,6 +392,15 @@ class MainPage  extends Component{
       }
       return result;
    }
+   makeUUID=(length)=>{
+    var result           = '';
+    var characters       = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+ }
 
 
    getFriends=()=>{
@@ -510,6 +519,7 @@ class MainPage  extends Component{
             console.log(results);
             postHash= results[0].hash;
             console.log(postHash);
+            var localPostHash=results[0].hash;
             console.log(this.state.fullName);
             console.log(this.state.userBlockchainResultOfParticularUser);
             console.log(this.state.userJsonResultOfParticularUserFromIPFS);
@@ -524,28 +534,62 @@ class MainPage  extends Component{
             console.log(originalText); // 'my message'
             var arrayData=this.state.groupInformationPassParameter.groupDetails;
             console.log(arrayData);
+            console.log(arrayData==undefined);
             var userObj={
               postOwner:this.state.fullName,
-              postHash:postHash,
+              postHash:results[0].hash,
               sessionKey:sessionKey,
-              encryptedPostHash:encryptedPostHash
-              
+              encryptedPostHash:encryptedPostHash,
+              groupVersion:this.state.groupInformationPassParameter.groupVersion,
+              sessionKeyDetails:[]
             }
-            var sessionKeyDetails=[]; 
-            for(var i=0;i<arrayData.length;i++){
-              console.log(arrayData[i]);
-              var encryptedUserSession= CryptoJS.AES.encrypt(sessionKey, arrayData[i].encryptedGroupkey).toString();
-              var userObj={
-                emailId:arrayData[i].emailId,
-                encryptedUserSession:encryptedUserSession,
-                userHash:arrayData.userHash
+            console.log("Checking the data");
+            console.log(userObj);
+            console.log("------");
+            
+            if(arrayData==undefined){
+              userObj.groupVersion=0;
+            }
+            else{
+              for(var i=0;i<arrayData.length;i++){
+                console.log(arrayData[i]);
+                var encryptedUserSession= CryptoJS.AES.encrypt(sessionKey, arrayData[i].encryptedGroupkey).toString();
+                var usr={
+                  emailId:arrayData[i].emailId,
+                  encryptedUserSession:encryptedUserSession,
+                  userHash:arrayData[i].userHash
+                }
+                console.log(usr);
+                userObj.sessionKeyDetails.push(usr);
               }
-              sessionKeyDetails.push(userObj);
             }
-            userObj.sessionKeyDetails=sessionKeyDetails;
-            console.log(sessionKeyDetails);
+
             console.log("Json data");
             console.log(userObj);
+            var uuid = this.makeUUID(40);
+            uuid=1;
+            var date =  new Date();
+            var stringData=date.toString();
+            //////
+
+            // this.state.contract.methods.createPost(this.state.userEmailId,userInformationHash).send({from: this.state.account}).then((r)=>{
+            //   console.log(r);
+            var originalContentString = Buffer.from(JSON.stringify(userObj));
+            // The json is change to string format 
+            const userContent= {
+              content:originalContentString
+          }
+          ipfs.add(userContent,(error,results)=>{
+
+              var postHashAddress=results[0].hash;
+              console.log(postHashAddress);
+              //string memory _postedByEmailId,string memory _postHash, uint _uniquePostId ,string memory _currentDateAndTime
+            this.state.contract.methods.createPost(this.state.userEmailId,postHashAddress,uuid,stringData ).send({from: this.state.account}).then((r)=>{
+              console.log(r);
+            });
+          });
+
+            ///////
           });
          
           // var userObj={

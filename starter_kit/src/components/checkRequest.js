@@ -746,30 +746,9 @@ class checkRequest  extends Component{
                 </Navbar.Collapse>
                 </Navbar>
 
-              <br></br>
-              <br></br>
-              <button variant="primary" type="button" onClick={this.mainPage}>Main Page</button>
-              <br></br>
-              <br></br>
-              <br></br>
+              
             <div className="container text-center ">
-            <Jumbotron>
-                   <h1>Hello,{this.state.fullName} </h1>
-                  <p></p>
-                   <p>
-                  <Button variant="primary" onClick={this.check}></Button>
-                  </p>
-             </Jumbotron>
-            <Navbar bg="light">
-               <Navbar.Brand >
-               <h1>Search Friend</h1>
-                 </Navbar.Brand>
-             </Navbar>
-             <br></br>
-             <br></br>
-             <input type ="text" placeholder="Search Friend By Name" value={this.state.search} onChange={this.updateSearch} style={{height: "40px",  width:"990px",  }} />
-            <br></br>
-            <br></br>
+             <h2 style={ReactHeading}>Search Friends</h2>
              <hr></hr> 
               { list }
           {/* {list2} */}
