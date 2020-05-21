@@ -611,15 +611,15 @@ class checkRequest  extends Component{
           console.log(this.state.userJsonResultOfParticularUserFromIPFS);
           console.log(this.state.userBlockchainResultOfParticularUser);
           
-          this.props.history.push({
-            pathname: '/MainPage',
-            userEmailId:this.state.userEmailId,
-            fullName:this.state.fullName,
-            userJsonResultOfParticularUserFromIPFS:this.state.userJsonResultOfParticularUserFromIPFS,
-            totalUser:this.state.totalUser,
-            userBlockchainResultOfParticularUser:this.state.userBlockchainResultOfParticularUser
-              // your data array of objects
-          })
+          // this.props.history.push({
+          //   pathname: '/MainPage',
+          //   userEmailId:this.state.userEmailId,
+          //   fullName:this.state.fullName,
+          //   userJsonResultOfParticularUserFromIPFS:this.state.userJsonResultOfParticularUserFromIPFS,
+          //   totalUser:this.state.totalUser,
+          //   userBlockchainResultOfParticularUser:this.state.userBlockchainResultOfParticularUser
+          //     // your data array of objects
+          // })
 
             // this.props.history.push({
             //   pathname: '/MainPage',
