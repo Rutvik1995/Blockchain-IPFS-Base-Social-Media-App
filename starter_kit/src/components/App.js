@@ -13,6 +13,8 @@ import MainPage from './MainPage.js';
 import addProfilePic from './addProfilePic.js';
 import checkRequest from './checkRequest.js';
 import searchFriends from './searchFriends.js';
+import middle from './middle.js';
+import timeline from './timeline.js';
 
 // import { Form, Button, FormGroup, FormControl, ControlLabel,Card,ButtonToolbar } from "react-bootstrap";
 var ipfsClient = require('ipfs-http-client');
@@ -203,6 +205,7 @@ class App extends Component {
         <Route path='/addProfilePic' component={addProfilePic}></Route>
         <Route path='/searchFriends' component={searchFriends}></Route>
        <Route path='/checkRequest' component={checkRequest }></Route>
+       <Route path='/timeline' component={timeline }></Route>
         </BrowserRouter>
     
         
