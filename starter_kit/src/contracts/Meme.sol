@@ -49,6 +49,23 @@ contract Meme{
             userInformation[_userId].userHash=k;
         }
     }
+
+
+    function changeGroupInformation(uint  _userId,string memory _newHash) public {
+        uint checkId = _userId;
+        string memory newHash=_newHash;
+       // require((checkId<= userCount) && (checkId>0), “message to be displayed”);
+        if((checkId<= userCount) && (checkId>0)){
+            string memory k= groupInformation[_userId].groupHash;
+            k=newHash;
+            groupInformation[_userId].groupHash=k;
+        }
+    }
+
+
+
+
+
     uint public groupCount=0;
     function createGroup(string memory _groupEmailId,string memory _groupHash, uint  _versionId)  public {
         groupCount++;

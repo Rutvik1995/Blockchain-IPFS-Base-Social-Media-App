@@ -39,7 +39,8 @@ class MainPage  extends Component{
       }
 
       async componentWillMount(){
-        this.loadData();
+        await this.loadData();
+        await this.check();
         await this.loadWeb3()
         await this.loadBlockChainData();
       }
@@ -58,6 +59,18 @@ class MainPage  extends Component{
        this.setState({userBlockchainResultOfParticularUser:this.props.location.userBlockchainResultOfParticularUser});
     }
 
+    check=()=>{
+       console.log(this.state.fullName);
+       console.log(this.state.userEmailId)
+       console.log(this.state.userJsonResultOfParticularUserFromIPFS);
+       console.log(this.state.totalUser);
+       console.log(this.state.userBlockchainResultOfParticularUser);
+      // //console.log(this.state.totalUserName);
+       console.log(this.state.hasError);
+      console.log(this.state.totalUser);
+    
+
+    }
       async loadWeb3(){
         if(window.ethereum){
           window.web3 = new Web3(window.ethereum);
@@ -70,6 +83,9 @@ class MainPage  extends Component{
           window.alert("Use Metamask");
         } 
       }
+
+
+
 
       async loadBlockChainData(){
         const web3_2 = window.web3;
@@ -190,7 +206,7 @@ class MainPage  extends Component{
         console.log(this.state.totalUser);
         console.log(this.state.userBlockchainResultOfParticularUser);
            this.props.history.push({
-             pathname: '/checkRequest',
+             pathname: '/checkRequest2',
              userEmailId: this.state.userEmailId,
              fullName:  this.state. fullName,
              userJsonResultOfParticularUserFromIPFS:this.state.userJsonResultOfParticularUserFromIPFS,
@@ -230,7 +246,7 @@ class MainPage  extends Component{
        searchFriends=()=>{
         console.log("in people");
         this.props.history.push({
-          pathname: '/searchFriends',
+          pathname: '/searchFriends2',
           userEmailId: this.state.userEmailId,
           fullName:  this.state. fullName,
           userJsonResultOfParticularUserFromIPFS:this.state.userJsonResultOfParticularUserFromIPFS,
