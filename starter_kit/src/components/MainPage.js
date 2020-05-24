@@ -419,6 +419,11 @@ class MainPage  extends Component{
  }
 
 
+ getFriendsInform=()=>{
+  console.log(this.state.groupInformationPassParameter);
+ }
+
+
    getFriends=()=>{
      console.log(this.state.userJsonResultOfParticularUserFromIPFS);
      var arrayData=this.state.userJsonResultOfParticularUserFromIPFS.friend;
@@ -835,7 +840,7 @@ class MainPage  extends Component{
                         <ListGroup.Item style={mystyle} onClick={this.getFriends} >Friend List</ListGroup.Item>
                         <ListGroup.Item style={mystyle} onClick={this.addProfilePic} >Add Profile Pic</ListGroup.Item>
                         <ListGroup.Item style={mystyle} onClick={this.about}>About</ListGroup.Item>
-                        <ListGroup.Item style={mystyle} >Vestibulum at eros</ListGroup.Item>
+                        <ListGroup.Item style={mystyle}  onClick={this.getFriendsInform} >Vestibulum at eros</ListGroup.Item>
                       </ListGroup>
                       </div>
                     </div>

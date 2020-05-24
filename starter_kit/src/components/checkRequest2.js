@@ -1,7 +1,7 @@
 import React, { Component,useState } from 'react';
 import Web3 from 'web3';
 import Meme from '../abis/Meme.json';
-import { Button,Nav,Navbar,Card } from "react-bootstrap";
+import { Button,Nav,Navbar,Card,Modal } from "react-bootstrap";
 import Jumbotron from 'react-bootstrap/Jumbotron'
 import ReactSearchBox from 'react-search-box'
 var ipfsClient = require('ipfs-http-client');
@@ -30,7 +30,11 @@ class checkRequest2  extends Component{
           hasError: false,
           userMap:null,
           userPublicKeyMap:null ,
-          groupInformationListFromBlockChain:[]
+          groupInformationListFromBlockChain:[],
+          currentUserGroupHash:'',
+          currentGroupKeyInformation:null,
+          SuccessMessage:false,
+          friendName:''
         };       
       }
 
@@ -120,6 +124,7 @@ class checkRequest2  extends Component{
      mainPage=()=>{
        console.log(this.state.userJsonResultOfParticularUserFromIPFS);
        console.log(this.state.requestedFriendName);
+     
        this.props.history.push({
         pathname: '/MainPage',
         userEmailId:this.state.userEmailId,
@@ -221,7 +226,9 @@ class checkRequest2  extends Component{
         console.log(myMap.get(max));
         var lastestGroupDetailHash= myMap.get(max);
         console.log(lastestGroupDetailHash);
-       
+        this.setState({currentUserGroupHash:lastestGroupDetailHash.groupHash})
+        this.setState({currentGroupKeyInformation:lastestGroupDetailHash});
+
        if(max!=-1){
         var t= lastestGroupDetailHash.groupHash;
         var content;
@@ -344,7 +351,7 @@ class checkRequest2  extends Component{
     //   }
      
       acceptFriendRequest=(dataParse)=>{
-
+        this.setState({ friendName:dataParse.name});
         var check_1=0;
         var check_2=0;
         var check_3=0;
@@ -355,17 +362,52 @@ class checkRequest2  extends Component{
        // var groupKey1=this.makeid(10);
         //var groupKey2=this.makeid(10);
         for(var i=0;i<this.state.totalUser.length;i++){
-            if(dataParse.emailId==this.state.totalUser[i].userEmailId){
-                console.log("same");
-                console.log(this.state.totalUser[i].userHash);
-                userHash=this.state.totalUser[i].userHash;
-                dataParseUserBlockchainData=this.state.totalUser[i];
-                break;
-            }
+          if(dataParse.emailId==this.state.totalUser[i].userEmailId){
+              console.log("same");
+              console.log(this.state.totalUser[i].userHash);
+              userHash=this.state.totalUser[i].userHash;
+              dataParseUserBlockchainData=this.state.totalUser[i];
+              break;
+          }
+      }
+      console.log(userHash);
+      console.log(dataParseUserBlockchainData);
+
+        var groupHash;
+        var dataParseGroupData;
+        var dataArray = [];
+        for(var j=0;j<this.state.groupInformationListFromBlockChain.length;j++){
+              if(this.state.groupInformationListFromBlockChain[j].groupEmailId==dataParse.emailId){
+                  //console.log(this.state.groupInformationListFromBlockChain[j]);
+                  dataArray.push(this.state.groupInformationListFromBlockChain[j]);
+                  console.log("same");
+                  
+              }
         }
-        console.log(dataParseUserBlockchainData);
-        console.log(userHash);
-        ipfs.get("/ipfs/"+userHash,(error,result)=>{        
+
+        let myMap = new Map();
+        var max=-1;
+        for(var i=0;i<dataArray.length;i++){
+          
+         var value=dataArray[i].groupVersion;
+         value=value.toString();
+         myMap.set(value,dataArray[i]);
+         console.log(value);
+         if(value>max){
+           max=value;
+         }
+        }
+        console.log("lastest group version is");
+        console.log(max);
+        console.log(myMap.get(max));
+        var lastestGroupDetailHash= myMap.get(max);
+        console.log(lastestGroupDetailHash);
+        dataParseGroupData=lastestGroupDetailHash;
+        groupHash=lastestGroupDetailHash.groupHash;
+        console.log(groupHash);
+        console.log(dataParseGroupData);
+        console.log(dataParseGroupData.groupId.toString());
+        ipfs.get("/ipfs/"+groupHash,(error,result)=>{        
           console.log("Information of friend to add");
           var uint8array = new TextEncoder("utf-8").encode("¢");
           var UserStringResult = new TextDecoder("utf-8").decode(result[0].content);
@@ -376,9 +418,11 @@ class checkRequest2  extends Component{
           console.log(friendsArray);
           console.log(userJsonResult.request);
           var obj=[];
+          var friendToBeAddedTempArray;
           for(var i=0;i<userJsonResult.request.length;i++){
             console.log(userJsonResult.request[i]);
             if(this.state.fullName==userJsonResult.request[i].name){
+              friendToBeAddedTempArray=userJsonResult.request[i];
             }
             else{
               obj.push(userJsonResult.request[i]);
@@ -389,21 +433,42 @@ class checkRequest2  extends Component{
           userJsonResult.request=obj;
 
           console.log(userJsonResult);
+          console.log(friendToBeAddedTempArray);
           var friendInformation={
-            name:this.state.fullName,
-            emailId:this.state.userEmailId,
-            userId:this.state.userBlockchainResultOfParticularUser.userId
+            name:friendToBeAddedTempArray.name,
+            emailId:friendToBeAddedTempArray.emailId,
+            profilePicHash:friendToBeAddedTempArray.profilePicHash,
+            userId:friendToBeAddedTempArray.userId
           }
           userJsonResult.friend.push(friendInformation);
+         
           //Updating the friend ( adding the friend in friend list )
+          console.log(userJsonResult);
+          console.log(dataParseUserBlockchainData.publickey);
+          var encryptedGroupkey= CryptoJS.AES.encrypt(userJsonResult.commonGroupKey, dataParseUserBlockchainData.publickey).toString();
+          console.log(encryptedGroupkey);
+          var singleUserData={}
+            //    // name:this.state.fullName,
+            //     emailId:this.state.userEmailId,
+            //     encryptedGroupkey:encryptedGroupkey,
+            //     userHash:this.state.userBlockchainResultOfParticularUser.userHash
+            //   }
+          var groupDetailsObject={
+            name:friendToBeAddedTempArray.name,
+            emailId:friendToBeAddedTempArray.emailId,
+            encryptedGroupkey:encryptedGroupkey,
+            userHash:dataParseUserBlockchainData.userHash
+          }
+          console.log(groupDetailsObject)
+          userJsonResult.groupDetails.push(groupDetailsObject);
           console.log(userJsonResult);
           //****************
           //Now userJson is updated
        // updating the group information 
 
-         var groupVersion = userJsonResult.groupVersion;
+        //  var groupVersion = userJsonResult.groupVersion;
         // groupVersion++;
-         userJsonResult.groupVersion=groupVersion;
+        //  userJsonResult.groupVersion=groupVersion;
        //  userJsonResult.currentGroupKey=groupKey1; 
 
          // No User right now 
@@ -413,6 +478,7 @@ class checkRequest2  extends Component{
         //     console.log("collect the friends");
         //   }
         //   console.log(userJsonResult);
+
           var originalContentString = Buffer.from(JSON.stringify(userJsonResult));
       
       
@@ -428,51 +494,52 @@ class checkRequest2  extends Component{
             console.log(dataParse.userId);    
             check_1=1;  
             this.checkValue(check_1,check_2,check_3,check_4);    
-               this.state.contract.methods.changeUserInformation(dataParse.userId,userInformationHash).send({from: this.state.account}).then((r)=>{
+               this.state.contract.methods.changeGroupInformation(dataParseGroupData.groupId.toString(),userInformationHash).send({from: this.state.account}).then((r)=>{
                  check_1=1;
                  this.checkValue(check_1,check_2,check_3,check_4);
                   console.log(r);
               });
           });
-          var dataArray = [];
-          for(var j=0;j<this.state.groupInformationListFromBlockChain.length;j++){
-                if(this.state.groupInformationListFromBlockChain[j].groupEmailId==dataParse.emailId){
-                    //console.log(this.state.groupInformationListFromBlockChain[j]);
-                    dataArray.push(this.state.groupInformationListFromBlockChain[j]);
-                    console.log("same");
+          // var dataArray = [];
+          // for(var j=0;j<this.state.groupInformationListFromBlockChain.length;j++){
+          //       if(this.state.groupInformationListFromBlockChain[j].groupEmailId==dataParse.emailId){
+          //           //console.log(this.state.groupInformationListFromBlockChain[j]);
+          //           dataArray.push(this.state.groupInformationListFromBlockChain[j]);
+          //           console.log("same");
                     
-                }
-          }
+          //       }
+          // }
 
-          let myMap = new Map();
-          var max=-1;
-          for(var i=0;i<dataArray.length;i++){
+          // let myMap = new Map();
+          // var max=-1;
+          // for(var i=0;i<dataArray.length;i++){
             
-           var value=dataArray[i].groupVersion;
-           value=value.toString();
-           myMap.set(value,dataArray[i]);
-           console.log(value);
-           if(value>max){
-             max=value;
-           }
-          }
-          console.log("lastest group version is");
-          console.log(max);
-          console.log(myMap.get(max));
-          var lastestGroupDetailHash= myMap.get(max);
-          console.log(lastestGroupDetailHash);
+          //  var value=dataArray[i].groupVersion;
+          //  value=value.toString();
+          //  myMap.set(value,dataArray[i]);
+          //  console.log(value);
+          //  if(value>max){
+          //    max=value;
+          //  }
+          // }
+          // console.log("lastest group version is");
+          // console.log(max);
+          // console.log(myMap.get(max));
+          // var lastestGroupDetailHash= myMap.get(max);
+          // console.log(lastestGroupDetailHash);
 
-          ipfs.get("/ipfs/"+lastestGroupDetailHash.groupHash,(error,result)=>{        
-            console.log("Information user of group owner ");
-            console.log(result);
-            var uint8array = new TextEncoder("utf-8").encode("¢");
-            var UserStringResult = new TextDecoder("utf-8").decode(result[0].content);
-            var groupInformation=JSON.parse(UserStringResult);
-            console.log(groupInformation);
-            var groupKey = groupInformation.commonGroupKey;
-            console.log(groupKey);
+          // ipfs.get("/ipfs/"+lastestGroupDetailHash.groupHash,(error,result)=>{        
+          //   console.log("Information user of group owner ");
+          //   console.log(result);
+          //   var uint8array = new TextEncoder("utf-8").encode("¢");
+          //   var UserStringResult = new TextDecoder("utf-8").decode(result[0].content);
+          //   var groupInformation=JSON.parse(UserStringResult);
+          //   console.log(groupInformation);
+          //   var groupKey = groupInformation.commonGroupKey;
+          //   console.log(groupKey);
+            
 
-          });
+          // });
 
         //   console.log(oldUserJsonResult);
         //   var currentGroupVersion=oldUserJsonResult.groupVersion;
@@ -551,8 +618,8 @@ class checkRequest2  extends Component{
 
           });
 
-          /*
-          ipfs.get("/ipfs/"+this.state.userBlockchainResultOfParticularUser.userHash,(error,result)=>{        
+          
+          ipfs.get("/ipfs/"+this.state.currentUserGroupHash,(error,result)=>{        
             console.log("Information user of group owner ");
             
             var uint8array = new TextEncoder("utf-8").encode("¢");
@@ -563,44 +630,66 @@ class checkRequest2  extends Component{
             console.log(userJsonResult);
             console.log(userJsonResult.requestNotAccepted);
             var obj=[];
+            var friendToBeAddedTempArray;
             for(var i=0;i<userJsonResult.requestNotAccepted.length;i++){
               console.log(userJsonResult.requestNotAccepted[i]);
               if(dataParse.name==userJsonResult.requestNotAccepted[i].name){
+                friendToBeAddedTempArray=userJsonResult.requestNotAccepted[i];
               }
               else{
                 obj.push(userJsonResult.requestNotAccepted[i]);
               }
             }
             console.log(obj);
+            console.log(friendToBeAddedTempArray);
             userJsonResult.requestNotAccepted=obj;
+            console.log(userJsonResult);
            // userJsonResult.requestNotAccepted=obj
            console.log(userJsonResult);
            var friendInformation={
              name:dataParse.name,
              emailId:dataParse.emailId,
-             userId:dataParse.userId
+             userId:dataParse.userId,
+             profilePicHash:friendToBeAddedTempArray.profilePicHash
            }
 
            userJsonResult.friend.push(friendInformation);
-
-         
+           console.log( dataParseUserBlockchainData.publickey);
+           console.log(userJsonResult.commonGroupKey);
+          // var encryptedGroupkey= CryptoJS.AES.encrypt(userJsonResult.commonGroupKey,this.state.userBlockchainResultOfParticularUser.publickey).toString();
+           var encryptedGroupkey= CryptoJS.AES.encrypt(userJsonResult.commonGroupKey, dataParseUserBlockchainData.publickey).toString();
+           //console.log(encryptedGroupkey);
            //Updating the friend ( adding the friend in friend list )
            console.log(userJsonResult);
+           console.log(this.state.currentGroupKeyInformation);
+
+           var groupDetailsObject={
+            name:friendToBeAddedTempArray.name,
+            emailId:friendToBeAddedTempArray.emailId,
+            encryptedGroupkey:encryptedGroupkey,
+            userHash:dataParseUserBlockchainData.userHash
+          }
+           console.log(groupDetailsObject)
+           userJsonResult.groupDetails.push(groupDetailsObject);
+           console.log(userJsonResult);
+
            //****************
            //Now userJson is updated
         // updating the group information 
 
-         var groupVersion = userJsonResult.groupVersion;
-          groupVersion++;
-         userJsonResult.groupVersion=groupVersion;
-         userJsonResult.currentGroupKey=groupKey2; 
-         this.setState({userJsonResultOfParticularUserFromIPFS:userJsonResult})
+        //  var groupVersion = userJsonResult.groupVersion;
+        //   groupVersion++;
+        //  userJsonResult.groupVersion=groupVersion;
+        //  userJsonResult.currentGroupKey=groupKey2; 
+         //this.setState({userJsonResultOfParticularUserFromIPFS:userJsonResult})
          var originalContentString = Buffer.from(JSON.stringify(userJsonResult));
          // The json is change to string format 
          const userContent3= {
            content:originalContentString
        }
+       this.setState({SuccessMessage:true})
          ipfs.add(userContent3,(error,results)=>{
+
            console.log(results);
            var userInformationHash= results[0].hash;
            console.log(results[0].hash);  
@@ -608,15 +697,15 @@ class checkRequest2  extends Component{
            this.state.userBlockchainResultOfParticularUser.userHash=results[0].hash;
            check_3=1; 
            this.checkValue(check_1,check_2,check_3,check_4);      
-              this.state.contract.methods.changeUserInformation(this.state.userBlockchainResultOfParticularUser.userId,userInformationHash).send({from: this.state.account}).then((r)=>{
+              this.state.contract.methods.changeGroupInformation(this.state.currentGroupKeyInformation.groupId.toString(),userInformationHash).send({from: this.state.account}).then((r)=>{
               
                 this.checkValue(check_1,check_2,check_3,check_4);
                  console.log(r);
              });
          });
+        });
 
-
-
+/*
 //////
 
 
@@ -785,6 +874,71 @@ class checkRequest2  extends Component{
       border: "2px solid #365899",
       
       }
+      var cardStyle2={
+        
+        padding:"10px 10px 10px 10px",
+        display:"flex",
+        flexDirection:"column",
+        alignItems:"center",
+        textAlign:"center"
+       // width:"1000px 
+    }
+  
+      var card={
+        boxShadow:"0px 0px 0.5px rgba(10,10,10,.3)",
+        alignItems:"center",
+        position:"relative",
+        userSelect:"none",
+        overflow:"hidden",
+        transition:"all .5s ease",
+        padding:"10px",
+        width:"850px",
+        height:"280px",
+        maxWidth:"100%",
+        backgroundColor:"white",
+        marginBottom:"10px",
+        fontSize:"14px",
+        borderRadius:"3px",
+        borderStyle: "solid",
+        borderColor: "#365899"
+      }
+      var card2={
+        boxShadow:"0px 0px 0.5px rgba(10,10,10,.3)",
+        alignItems:"center",
+        position:"relative",
+        userSelect:"none",
+        overflow:"hidden",
+        transition:"all .5s ease",
+        padding:"10px",
+        width:"950px",
+        height:"280px",
+        maxWidth:"100%",
+        backgroundColor:"white",
+        marginBottom:"10px",
+        fontSize:"14px",
+        borderRadius:"3px",
+       
+      }
+      var info={
+          display:"flex",
+          alignItems:"center",
+          height:"40px"
+        }
+        var photo={
+          height:"40px",
+          width:"40px",
+          backgroundColor:"gray",
+          opacity:".8",
+          borderRadius:"100%"
+        }
+        var name={
+        
+          fontWeight:"bold",
+          color:"rgb(66, 103, 178)",
+          opacity:".9",
+          paddingLeft:"20px",
+      }
+      
 
         // let list = this.state.requestedFriendName.map(people => 
         //   <Card    style={cardBorder} >
@@ -859,6 +1013,46 @@ class checkRequest2  extends Component{
               { list }
           {/* {list2} */}
                 </div>
+
+
+
+              {/* <Modal show={this.state.SuccessMessage} onHide={this.mainPage} >
+        <Modal.Header closeButton>
+          <Modal.Title>Friend Add Successfully </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>You and {this.state.friendName} are friends now!</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={this.mainPage}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={this.mainPage}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal> */}
+
+      <Modal show={this.state.SuccessMessage} onHide={this.mainPage}  size="lg">
+                  <Modal.Header closeButton>
+                    <Modal.Title style={{color:"#205663", paddingLeft:"310px"}}>Success</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>    
+                  <div style={card2} expand="false">
+                            <div style={info}>
+                                <img style={photo} src={this.state.userJsonResultOfParticularUserFromIPFS.profilePicHash} ></img>
+                              <div style={name}><h4>{this.state.fullName}</h4></div>
+                              <div style={{textAlign:"center", marginTop:"280px"}} >
+                              <div style={name}><h4>You and {this.state.friendName} are friends!</h4>
+                             </div>
+                            </div>
+                          </div>
+                    </div>  
+                
+                    <hr></hr>
+                  </Modal.Body>
+                  <Modal.Footer>
+                  <Button onClick={this.mainPage}>Done</Button>
+                </Modal.Footer>
+              </Modal>
           </div>
                );
               }
