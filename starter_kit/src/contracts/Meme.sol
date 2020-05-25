@@ -55,11 +55,11 @@ contract Meme{
         uint checkId = _userId;
         string memory newHash=_newHash;
        // require((checkId<= userCount) && (checkId>0), “message to be displayed”);
-        if((checkId<= userCount) && (checkId>0)){
+       
             string memory k= groupInformation[_userId].groupHash;
             k=newHash;
             groupInformation[_userId].groupHash=k;
-        }
+        
     }
 
 

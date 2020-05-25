@@ -312,6 +312,9 @@ class searchFriends2 extends Component{
           var userInformationHash= results[0].hash;
           console.log(results[0].hash);  
           console.log(userId);          
+          console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+          console.log(userId);
+          console.log(userInformationHash);
              this.state.contract.methods.changeGroupInformation(userId,userInformationHash).send({from: this.state.account}).then((r)=>{
                 console.log(r);
             });
@@ -351,10 +354,16 @@ class searchFriends2 extends Component{
           console.log(results);
           var userInformationHash= results[0].hash;
           console.log(results[0].hash);  
-          console.log(this.state.userBlockchainResultOfParticularUser.userId); 
+          
           //this.state.userBlockchainResultOfParticularUser.userHash=results[0].hash;
           var id= this.state.currentUserGroupData.groupId;
-             this.state.contract.methods.changeGroupInformation(id,userInformationHash).send({from: this.state.account}).then((r)=>{
+          console.log(id);
+          var checkId=id;
+          console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+          console.log(checkId.toString());
+          console.log(results[0].hash);
+
+             this.state.contract.methods.changeGroupInformation(checkId.toString(),results[0].hash).send({from: this.state.account}).then((r)=>{
                 console.log(r);
             });
             

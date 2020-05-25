@@ -49,7 +49,7 @@ class checkRequest2  extends Component{
         await this.check();
         this.pausecomp(4500)
         await this.loadUserMap();
-      //  await this.getName();
+       await this.getName();
         await this.loadNameList();
         await this.loadWeb3()
         await this.loadBlockChainData();
@@ -70,6 +70,9 @@ class checkRequest2  extends Component{
      }
      async loadUserMap(){
 
+     }
+     async getName(){
+       
      }
 
 

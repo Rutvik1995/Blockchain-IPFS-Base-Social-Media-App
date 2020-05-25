@@ -421,6 +421,15 @@ class MainPage  extends Component{
 
  getFriendsInform=()=>{
   console.log(this.state.groupInformationPassParameter);
+  this.props.history.push({
+    pathname: '/timeline',
+    userEmailId: this.state.userEmailId,
+    fullName:  this.state. fullName,
+    userJsonResultOfParticularUserFromIPFS:this.state.userJsonResultOfParticularUserFromIPFS,
+    totalUser:this.state.totalUser,
+    userBlockchainResultOfParticularUser:this.state.userBlockchainResultOfParticularUser
+  })
+
  }
 
 
@@ -470,6 +479,7 @@ class MainPage  extends Component{
    about=()=>{
     console.log("outside the loop");
     console.log(this.state.groupInformationPassParameter);
+
   }
 
     actuallyPost=()=>{
