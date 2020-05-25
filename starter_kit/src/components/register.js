@@ -286,6 +286,17 @@ class register extends Component {
      }
 
 
+     makeid=(length)=>{
+      var result           = '';
+      var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      var charactersLength = characters.length;
+      for ( var i = 0; i < length; i++ ) {
+         result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      }
+      return result;
+   }
+
+
      handleClick2 = () => {
         /////////
         console.log("In message");
@@ -310,7 +321,7 @@ class register extends Component {
             memberOfGroup:[],
             ownerOfGroup:[],
             friend:[],
-            groupVersion:0,
+            groupVersion:1,
             currentGroupKey:''
           };
         //This is the the data which is enter by the user 
@@ -346,8 +357,45 @@ class register extends Component {
                  this.state.contract.methods.addUser(this.state.userEmailId,userInformationHash,publicKey).send({from: this.state.account}).then((r)=>{
                     console.log(r);
                 });  
+
+                var groupKey1=this.makeid(10);
+                var groupOwner=fullName
+                var groupVersion=1;
+                var groupDetails=[];
+                var start="noUpdate"
+
+                var groupObj={
+                  commonGroupKey:groupKey1,
+                  groupOwnerName:groupOwner,
+                  groupDetails:[],
+                  groupVersion:1,
+                  requestNotAccepted:[],
+                  request:[],
+                  friend:[],
+                  start:start
+                }
+                var originalGroupString = Buffer.from(JSON.stringify(groupObj));
+                // The json is change to string format 
+                const groupContent= {
+                  content:originalGroupString
+              }
+             
+                ipfs.add(groupContent,(error,results)=>{
+                  console.log(results[0].hash);
+                    this.state.contract.methods.createGroup(emailId,results[0].hash,1).send({from: this.state.account}).then((r)=>{
+                       console.log(r);
+                       console.log("done");
+                   });
+
+                });
+            
+
             });      
             });
+
+
+
+
       }
 
 
