@@ -598,9 +598,11 @@ class MainPage  extends Component{
             console.log("Json data");
             console.log(userObj);
             var uuid = this.makeUUID(40);
-            uuid=1;
-            var date =  new Date();
-            var stringData=date.toString();
+            window.open( 
+              "http://localhost:8888/Facebook-sdk/facebooksdk/?url?=http://localhost:3000/MainPage/"+uuid, "_blank"); 
+            // uuid=1;
+            // var date =  new Date();
+            // var stringData=date.toString();
             //////
 
             // this.state.contract.methods.createPost(this.state.userEmailId,userInformationHash).send({from: this.state.account}).then((r)=>{
@@ -615,9 +617,11 @@ class MainPage  extends Component{
               var postHashAddress=results[0].hash;
               console.log(postHashAddress);
               //string memory _postedByEmailId,string memory _postHash, uint _uniquePostId ,string memory _currentDateAndTime
-            this.state.contract.methods.createPost(this.state.userEmailId,postHashAddress,uuid,stringData ).send({from: this.state.account}).then((r)=>{
+            this.state.contract.methods.createPost(this.state.userEmailId,postHashAddress,uuid).send({from: this.state.account}).then((r)=>{
               console.log(r);
             });
+            
+
           });
 
             ///////
@@ -638,8 +642,6 @@ class MainPage  extends Component{
 
 
 
-      window.open( 
-              "http://localhost:8888/Facebook-sdk/facebooksdk/?url?=http://localhost:3000/MainPage", "_blank"); 
        
     }
 
