@@ -23,8 +23,7 @@ contract Meme{
         uint postId;
         string postedEmailId;
         string postHash;
-        uint uniqueNumber;
-        string date;
+        string uuid;
     }
 
     //Write function
@@ -77,9 +76,9 @@ contract Meme{
     
 
     uint public postCount=0;
-    function createPost(string memory _postedByEmailId,string memory _postHash, uint _uniquePostId ,string memory _currentDateAndTime)  public {
+    function createPost(string memory _postedByEmailId,string memory _postHash, string memory _uniquePostId)  public {
         postCount++;
-        postInformation[postCount]=postHash(postCount,_postedByEmailId,_postHash,_uniquePostId,_currentDateAndTime);
+        postInformation[postCount]=postHash(postCount,_postedByEmailId,_postHash,_uniquePostId);
     }
 
 
