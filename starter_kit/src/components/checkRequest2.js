@@ -78,7 +78,7 @@ class checkRequest2  extends Component{
 
      makeid=(length)=>{
       var result           = '';
-      var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
       var charactersLength = characters.length;
       for ( var i = 0; i < length; i++ ) {
          result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -663,6 +663,9 @@ class checkRequest2  extends Component{
            var encryptedGroupkey= CryptoJS.AES.encrypt(userJsonResult.commonGroupKey, dataParseUserBlockchainData.publickey).toString();
            //console.log(encryptedGroupkey);
            //Updating the friend ( adding the friend in friend list )
+           var bytes  = CryptoJS.AES.decrypt(encryptedGroupkey, dataParseUserBlockchainData.publickey);
+          var originalText = bytes.toString(CryptoJS.enc.Utf8);
+          console.log(originalText);
            console.log(userJsonResult);
            console.log(this.state.currentGroupKeyInformation);
 
