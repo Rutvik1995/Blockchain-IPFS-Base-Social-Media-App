@@ -372,7 +372,8 @@ class register extends Component {
                   requestNotAccepted:[],
                   request:[],
                   friend:[],
-                  start:start
+                  start:start,
+                  postData:[]
                 }
                 var originalGroupString = Buffer.from(JSON.stringify(groupObj));
                 // The json is change to string format 
@@ -380,14 +381,10 @@ class register extends Component {
                   content:originalGroupString
               }
              
-                ipfs.add(groupContent,(error,results)=>{
-                  console.log(results[0].hash);
-                    this.state.contract.methods.createGroup(emailId,results[0].hash,1).send({from: this.state.account}).then((r)=>{
-                       console.log(r);
-                       console.log("done");
-                   });
-
-                });
+              setInterval(this.migrate2(groupContent,emailId),3000);
+                // alert("Hello")
+               // this.migrate(groupContent,emailId)
+             
             
 
             });      
@@ -398,8 +395,32 @@ class register extends Component {
 
       }
 
+      migrate2=(groupContent,emailId)=>{
+        console.log("in migrate 2");
+        ipfs.add(groupContent,(error,results)=>{
+          console.log(results[0].hash);
+  
+            this.state.contract.methods.createGroup(emailId,results[0].hash,1).send({from: this.state.account}).then((r)=>{
+               console.log(r);
+               console.log("done");
+           });
 
+        });
+      }
 
+      migrate=(groupContent,emailId)=>{
+        console.log(groupContent);
+        ipfs.add(groupContent,(error,results)=>{
+          console.log(results[0].hash);
+          this.migrate();
+          //   this.state.contract.methods.createGroup(emailId,results[0].hash,1).send({from: this.state.account}).then((r)=>{
+          //      console.log(r);
+          //      console.log("done");
+          //  });
+
+        });
+
+      }
 
      Login=()=>{
        console.log("in login")

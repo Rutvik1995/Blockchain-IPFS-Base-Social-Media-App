@@ -332,7 +332,7 @@ class checkRequest  extends Component{
        // updating the group information 
 
          var groupVersion = userJsonResult.groupVersion;
-         groupVersion++;
+        // groupVersion++;
          userJsonResult.groupVersion=groupVersion;
          userJsonResult.currentGroupKey=groupKey1; 
 

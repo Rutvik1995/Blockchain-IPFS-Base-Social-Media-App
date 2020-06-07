@@ -339,7 +339,7 @@ class searchFriends extends Component{
             {/* <p className="subtitle"><b><h4>{people.name}</h4></b></p> */}
             <Card.Title>{people.name}</Card.Title>
             <br></br>
-            <Card.Link  onClick={() => this.addFriend(people)}><Button variant="primary" size="sm" >Add Friend</Button></Card.Link>
+            <Card.Link style={{padding:"10px"}} onClick={() => this.addFriend(people)}><Button variant="primary" size="sm" >Add Friend</Button></Card.Link>
             <Card.Link  ><Button variant="secondary" size="sm" >View Profile</Button></Card.Link>
           </div>
         </div>

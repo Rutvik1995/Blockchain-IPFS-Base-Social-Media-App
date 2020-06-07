@@ -945,7 +945,12 @@ class checkRequest2  extends Component{
           paddingLeft:"20px",
       }
       
-
+      var postSignature ={
+        fontFamily: "Great Vibes",
+        fontSize: "36px",
+        color: "#BF2847",
+        
+    }
         // let list = this.state.requestedFriendName.map(people => 
         //   <Card    style={cardBorder} >
         //  <Card.Title style={{color: "#639407", fontWeight: "1200"  }} >{people.name}</Card.Title>
@@ -986,8 +991,9 @@ class checkRequest2  extends Component{
         return(
           <div>
 
-
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Great+Vibes" />
             <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous"></link>  
+  
           <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
           <a
             className="navbar-brand col-sm-3 col-md-2 mr-0 text-center"

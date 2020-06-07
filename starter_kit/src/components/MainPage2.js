@@ -3,7 +3,7 @@ import Web3 from 'web3';
 import Meme from '../abis/Meme.json';
 import { Button,Navbar,Nav,ListGroup,Modal,Card } from "react-bootstrap";
 import { MDBInput } from 'mdbreact';
-import './file.css'; 
+
 import ReactDOM from 'react-dom'
 import Files from 'react-files'
 var CryptoJS = require("crypto-js");
@@ -37,7 +37,8 @@ class MainPage2  extends Component{
           groupInformationPassParameter:'',
           currentGroupVersion:'',
           videoSet:'no',
-          photoSet:'no'
+          photoSet:'no',
+          signatureText:''
         };       
       }
 
@@ -490,6 +491,18 @@ class MainPage2  extends Component{
     console.log(this.state.groupInformationPassParameter);
     this.setState({videoSet:"yes"});
   }
+  about3=()=>{
+    var str = this.state.fullName;
+    var array = str.split(" ");
+    var array1=array[0];
+    var array2=array[1];
+    var array1=array1.substring(0,1);
+    var array2=array2.substring(0,1);
+    var final =array1+array2;
+    console.log(final);
+    //signatureText
+    this.setState({ signatureText:final});
+  }
 
 
     actuallyPost=()=>{
@@ -805,6 +818,21 @@ class MainPage2  extends Component{
         borderStyle: "solid",
         borderColor: "#365899"
       }
+      var signatureSession={
+        marginTop:"220px",
+        position: "absolute"
+      }
+      
+      var postSignature ={
+        fontFamily: "cursive",
+        fontSize: "24px",
+        color: "#00664b",
+        marginLeft:"610px"
+        
+    }
+    var signatureButton={
+      marginLeft:"-20px"
+    }
       const modalStyle = {
 	overlay: {
 		backgroundColor: "rgba(0, 0, 0,0.5)"
@@ -952,10 +980,29 @@ class MainPage2  extends Component{
                             <br></br>
                             <MDBInput type="textarea"  id="postTextArea" rows="5" />     
                           </div>
-                          <div className="btn-group" role="group" aria-label="Basic example">
+                          {/* <div class="clearfix" style={signatureButton}>
+                            <div class="pull-right">
+                            <Button variant="primary" size="sm" >Add Signature</Button>
+                            <div style={postSignature}>
+                                RP
+                            </div>
+                            </div>
+                          </div> */}
+                          <div class=" clearfix" style={signatureSession}>
+                            <div class="float-left"style={signatureButton}>
+                              <button type="button" class="btn btn-primary btn-sm" onClick={this.about3}  >Add Signature</button>
+                            </div>
+
+                            <div class="float-right">
+                            <span style={postSignature}>{this.state.signatureText}</span>
+                            </div>
+                            
+                          </div>
+                          
+                          <div className="btn-group" role="group" aria-label="Basic example" >
                             <button type="button" className="btn btn-primary"  onClick={this.about}>Image</button>
                             <button type="button" className="btn btn-secondary" 
-                            
+        
                             style={{backgroundColor: "white",borderColor:"white"  }}
                             >Middle</button>
                             <button type="button" className="btn btn-secondary"onClick={this.about2}>Video</button>

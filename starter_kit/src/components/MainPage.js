@@ -4,6 +4,7 @@ import Meme from '../abis/Meme.json';
 import { Button,Navbar,Nav,ListGroup,Modal,Card } from "react-bootstrap";
 import { MDBInput } from 'mdbreact';
 import './file.css'; 
+import './file2.css'; 
 import ReactDOM from 'react-dom'
 import Files from 'react-files'
 var CryptoJS = require("crypto-js");
