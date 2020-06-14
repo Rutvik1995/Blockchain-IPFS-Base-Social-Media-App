@@ -45,7 +45,9 @@ class viewPost  extends Component{
           renderCondition:0,
           signatureText:'',
           imageData:'no',
-          videoData:'no'
+          videoData:'no',
+          loading:"true",
+          privateKey:''
         };       
       }
       async componentWillMount(){
@@ -214,6 +216,7 @@ class viewPost  extends Component{
             }
           }
           //this.state.postUserPostIPFSData
+          this.setState({loading:"false"})
           if(taken==1){ 
             ipfs.get("/ipfs/"+this.state.PostOwnerData.postHash,(error,result)=>{
               var tempContent=result[0].content;
@@ -225,12 +228,7 @@ class viewPost  extends Component{
               this.decryptedData();
             });
           }
-          if(this.state.PostOwnerData['image']=='yes'){
-            this.setState({imageData:"yes"});
-          }
-          else if(this.state.PostOwnerData.video=='yes'){
-            this.setState({videoData:"yes"});
-          }
+
 
         });
       //   ipfs.get("/ipfs/"+this.state.PostOwnerData.postHash,(error,result)=>{
@@ -273,6 +271,13 @@ class viewPost  extends Component{
 
 
     decryptedData=()=>{
+      console.log(this.state.PostOwnerData);
+      if(this.state.PostOwnerData.image=='yes'){
+        this.setState({imageData:"yes"});
+      }
+      else if(this.state.PostOwnerData.video=='yes'){
+        this.setState({videoData:"yes"});
+      }
       console.log(this.state.chromeExtensionData.detail.privateKeyData)
       var stringPrivateKeyData=this.state.chromeExtensionData.detail.privateKeyData;
       var jsonPrivateKeyData=JSON.parse(stringPrivateKeyData);
@@ -354,6 +359,7 @@ class viewPost  extends Component{
 
     }
     renderData=()=>{
+     
       ipfs.get("/ipfs/"+this.state.postData,(error,result)=>{
         var tempContent=result[0].content;
         var postData=JSON.parse(tempContent);
@@ -632,121 +638,213 @@ class viewPost  extends Component{
           display:"inline-block",
 	        zIndex: "100"
         }
-        
+        var tagLine={
+          fontSize: "20px"
+        }
+        var signature ={
+            marginLeft:"623px",
+            fontFamily: "cursive",
+            fontSize: "20px",
+            color: "#00664b"
+        }
+        let imageStyle={
+          position: "relative",
+          maxWidth: "800px",
+          margin: "0 auto",
+          cursor: "none"
+    }
+    let text={
+      position: "absolute",
+      bottom: "0",
+      background: "rgb(0, 0, 0)",
+      background: "rgba(0, 0, 0, 0.5",
+      color: "#f1f1f1", 
+     // width: "100%" ,
+      padding: "9px",
+      marginLeft:"720px",
+      border: "3px solid #a6a6a6",
+      // borderRadius: "20px"
+      fontFamily: "cursive",
+      textShadow: "2px 2px 4px #000000",
+      fontSize: "19px",
+      pointerEvents : "none"
+    }
+    let border={
+      border: "5px solid rgb(54, 88, 153)",
+      marginLeft:"300px",
+      marginRight:"300px",
+      paddingBottom:"50px",
+      paddingTop:"30px"
+    }
 
   const renderAuthButton = ()=>{
-    if(this.state.renderCondition==1){
-
-      if(this.state.imageData=="yes"){
-        return(
-
-          <div className="row">
-          <div className="col-2">
-              Hello World
-           </div>
-           <div className="col-8">In second div
-            <div style={cardStyle}>
-                <div style={card} expand="false">
-                   <div style={info}>
-                   <img style={photo} src='https://www.gstatic.com/tv/thumb/persons/509114/509114_v9_ba.jpg' ></img>
-                       <div style={name}><h4> {this.state.PostOwnerFullName}</h4></div>
-                       <h3></h3>
-                   </div>
-                   <br></br>
-                  
-                  <p style={{fontSize:"19px",paddingLeft:"7px" }}>{this.state.displayData} <span>{this.state.signatureText}</span></p>
-                   <hr></hr>
-                  
-                       <br></br>
-                     
-                   <img src={this.state.postImage}  style={{height: "100%",  width:"700px",marginLeft:"150px" }}/>
-                   <p style={bottomRight}>Bottom Right</p>
-                
-                   
-                </div>
-           </div> 
-           </div>
-           <div  className="col-2">
-               In third div
-           </div>
-    </div>  
-        )
-      }
-      else if(this.state.videoData=="yes"){
-        return(
-
-                   
-                  
-          //
-          <div className="row">
-          <div className="col-2">
-              video Player
-           </div>
-           <div className="col-8">In second div
-            <div style={cardStyle}>
-                <div style={card} expand="false">
-                   <div style={info}>
-                   <img style={photo} src='https://www.gstatic.com/tv/thumb/persons/509114/509114_v9_ba.jpg' ></img>
-                       <div style={name}><h4> {this.state.PostOwnerFullName}</h4></div>
-                       <h3></h3>
-                   </div>
-                   <br></br>
-                  
-                  <p style={{fontSize:"19px",paddingLeft:"7px" }}>{this.state.displayData} <span>{this.state.signatureText}</span></p>
-                   <hr></hr>
-                  
-                       <br></br>
-                   {/* <img src={this.state.postImage}  style={{height: "100%",  width:"700px",marginLeft:"150px" }}></img> */}
-                   <div style={{height: "100%",  width:"700px",marginLeft:"150px" }}>
-                   <Player
-                        playsInline
-                        poster="/assets/poster.png"
-                        src="https://ipfs.infura.io/ipfs/QmTJcgraP6MR8gamSVgjyDWKeR2naRVzMNmaZnZ7PKQNxY"
-                        />
-                   </div>
-                 
-                   <div class="bottomRight">Bottom Right</div>
-                   <hr></hr>
-                   
-                </div>
-           </div> 
-           </div>
-           <div  className="col-2">
-               In third div
-           </div>
-    </div> 
-
-          //
-          
-        )
-      }
 
 
+
+   if(this.state.loading=="true"){
+      console.log("in true if")
+      return(
+        <div  style={{textAlign:"center"}}>
+          Loading.....
+        </div>
+      )
     }
-    else{
-      return (
-        <div>Not A friend
+else{
+  console.log("in true else if")
 
-        {/* <div style={cardStyle}>
+  if(this.state.renderCondition==1){
+    console.log(this.state.imageData);
+    console.log(this.state.videoData);
+    if(this.state.imageData=="yes"){
+      return(
+
+  //       <div className="row">
+  //       <div className="col-2">
+  //           Hello World
+  //        </div>
+  //        <div className="col-8">In second div
+  //         <div style={cardStyle}>
+  //             <div style={card} expand="false">
+  //                <div style={info}>
+  //                <img style={photo} src='https://www.gstatic.com/tv/thumb/persons/509114/509114_v9_ba.jpg' ></img>
+  //                    <div style={name}><h4> {this.state.PostOwnerFullName}</h4></div>
+  //                    <h3></h3>
+  //                </div>
+  //                <br></br>
+                
+  //               <p style={{fontSize:"19px",paddingLeft:"7px" }}>{this.state.displayData} <span>{this.state.signatureText}</span></p>
+  //                <hr></hr>
+                
+  //                    <br></br>
+                   
+  //                <img src={this.state.postImage}  style={{height: "100%",  width:"700px",marginLeft:"150px" }}/>
+  //                <p style={bottomRight}>Bottom Right</p>
+              
+                 
+  //             </div>
+  //        </div> 
+  //        </div>
+  //        <div  className="col-2">
+  //            In third div
+  //        </div>
+  // </div>  
+
+<div>
+<h2>In About Component</h2>
+  <div style={border}>
+  <div className="container">
+<div style={info}>
+<img style={photo} src='https://www.gstatic.com/tv/thumb/persons/509114/509114_v9_ba.jpg' ></img>
+   <div style={name}><h4> {this.state.PostOwnerFullName}</h4></div>
+  
+</div>
+<hr></hr>
+<p style={tagLine}>
+{this.state.displayData}
+   <span style={signature}>{this.state.signatureText}</span>
+</p>
+<hr style={{width:"40px",textAlign:"left",marginLeft:"730px",marginTop:"-15px",  position:"relative",borderTop: "7px solid" }}></hr> 
+</div>
+
+<div className="container" style={imageStyle}>
+  <img src={this.state.postImage} style={{height:'700px', width:"100%"}} alt="Notebook" />
+  <div style={text}>
+      <p>{this.state.signatureText}</p>
+  </div>
+</div>
+  </div>
+</div>
+
+
+      )
+    }
+    else if(this.state.videoData=="yes"){
+      return(
+
+                 
+                
+        //
+        <div className="row">
+        <div className="col-2">
+            video Player
+         </div>
+         <div className="col-8">In second div
+          <div style={cardStyle}>
               <div style={card} expand="false">
                  <div style={info}>
                  <img style={photo} src='https://www.gstatic.com/tv/thumb/persons/509114/509114_v9_ba.jpg' ></img>
                      <div style={name}><h4> {this.state.PostOwnerFullName}</h4></div>
+                     <h3></h3>
                  </div>
                  <br></br>
                 
-              <p style={{fontSize:"19px",paddingLeft:"7px" }}>{this.state.displayData}</p>
+                {/* <p style={{fontSize:"19px",paddingLeft:"7px" }}>{this.state.displayData} <span>{this.state.signatureText}</span></p> */}
+                <p style={tagLine}>
+{this.state.displayData}
+   <span style={signature}>{this.state.signatureText}</span>
+</p>
+<hr style={{width:"40px",textAlign:"left",marginLeft:"730px",marginTop:"-15px",  position:"relative",borderTop: "7px solid" }}></hr> 
                  <hr></hr>
+                
                      <br></br>
-                 <img src={this.state.postImage}  style={{height: "100%",  width:"900px",marginLeft:"200px" }}></img>
+                 {/* <img src={this.state.postImage}  style={{height: "100%",  width:"700px",marginLeft:"150px" }}></img> */}
+                 <div style={{height: "100%",  width:"700px",marginLeft:"150px" }}>
+                 <Player
+                      playsInline
+                      poster="/assets/poster.png"
+                      src="https://ipfs.infura.io/ipfs/QmTJcgraP6MR8gamSVgjyDWKeR2naRVzMNmaZnZ7PKQNxY"
+                      />
+                 </div>
+               
+                 <div class="bottomRight">Bottom Right</div>
                  <hr></hr>
                  
               </div>
-         </div>  */}
+         </div> 
+         </div>
+         <div  className="col-2">
+             In third div
+         </div>
+  </div> 
 
-           </div>
+        //
+        
       )
     }
+
+
+  }
+  else{
+    return (
+      <div>Not A friend
+
+      {/* <div style={cardStyle}>
+            <div style={card} expand="false">
+               <div style={info}>
+               <img style={photo} src='https://www.gstatic.com/tv/thumb/persons/509114/509114_v9_ba.jpg' ></img>
+                   <div style={name}><h4> {this.state.PostOwnerFullName}</h4></div>
+               </div>
+               <br></br>
+              
+            <p style={{fontSize:"19px",paddingLeft:"7px" }}>{this.state.displayData}</p>
+               <hr></hr>
+                   <br></br>
+               <img src={this.state.postImage}  style={{height: "100%",  width:"900px",marginLeft:"200px" }}></img>
+               <hr></hr>
+               
+            </div>
+       </div>  */}
+
+         </div>
+    )
+  }
+
+}
+
+
+
+
+
   }
 
 
