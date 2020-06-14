@@ -3,9 +3,12 @@ import Web3 from 'web3';
 import Meme from '../abis/Meme.json';
 import { Button,Navbar,Nav,ListGroup,Modal,Card } from "react-bootstrap";
 import { MDBInput } from 'mdbreact';
-
 import ReactDOM from 'react-dom'
 import Files from 'react-files'
+import sha256 from 'crypto-js/sha256';
+import hmacSHA512 from 'crypto-js/hmac-sha512';
+import Base64 from 'crypto-js/enc-base64';
+const Cryptr = require('cryptr');
 var CryptoJS = require("crypto-js");
 
 var ipfsClient = require('ipfs-http-client');
@@ -38,7 +41,10 @@ class MainPage2  extends Component{
           currentGroupVersion:'',
           videoSet:'no',
           photoSet:'no',
-          signatureText:''
+          signatureText:'',
+          chromeExtensionData:'',
+          postTextHashHashDigesh:'',
+          postTextDigitalSignature:''
         };       
       }
 
@@ -47,6 +53,7 @@ class MainPage2  extends Component{
         await this.check();
         await this.loadWeb3()
         await this.loadBlockChainData();
+        document.addEventListener('csEvent', this.checkEvent);
       }
 
       updateModal(isVisible) {
@@ -72,7 +79,7 @@ class MainPage2  extends Component{
       // //console.log(this.state.totalUserName);
        console.log(this.state.hasError);
       console.log(this.state.totalUser);
-    
+      document.addEventListener('csEvent', this.checkEvent);
 
     }
       async loadWeb3(){
@@ -88,6 +95,9 @@ class MainPage2  extends Component{
         } 
       }
 
+      async componentDidMount(){
+        document.addEventListener('csEvent', this.checkEvent);
+      }
 
 
 
@@ -322,11 +332,28 @@ class MainPage2  extends Component{
   
 
     capturePostFile=(event)=>{
+    
       console.log(ipfs );
         event.preventDefault();
         console.log("file is capture");
         console.log(event);
+        //type
         console.log(event.target.files[0]);
+        var str = event.target.files[0].type;
+        var array = str.split('/');
+        var array1=array[0];
+        if(array1=='video'){
+          console.log(array1);
+          ///
+          this.setState({videoSet:"yes"});
+          console.log(this.state.videoSet);
+          ///
+        }
+        else if(array1=='image'){
+          console.log(array1);
+          this.setState({photoSet:"yes"});
+          console.log(this.state.photoSet);
+        }
         var file = event.target.files[0];
         var reader = new window.FileReader();
         reader.readAsArrayBuffer(file);  
@@ -334,7 +361,10 @@ class MainPage2  extends Component{
           console.log(reader.result);
           this.setState({postPicBuffer:Buffer(reader.result)})
           console.log("buffer",Buffer(reader.result));
+          console.log(this.state.videoSet);
+          console.log(this.state.photoSet);
         }   
+       
     }
 
     uploadProfilePic=()=>{
@@ -492,6 +522,41 @@ class MainPage2  extends Component{
     this.setState({videoSet:"yes"});
   }
   about3=()=>{
+    console.log(this.state.chromeExtensionData);
+    var message = this.state.chromeExtensionData.detail;
+    var stringPrivateKeyData=message.privateKeyData;
+    console.log(stringPrivateKeyData);
+    var jsonPrivateKeyData=JSON.parse(stringPrivateKeyData);
+    console.log(jsonPrivateKeyData);
+    for (var key in jsonPrivateKeyData) {
+      console.log(key);
+      console.log(jsonPrivateKeyData[key]);
+      var FinalPrivateKey;
+      if(this.state.userEmailId==jsonPrivateKeyData[key]){
+        console.log("in if ");
+        console.log(key);
+        console.log("match found");
+          var no=key.substring(7,key.length);
+          var privateKey="privateKey";
+          var result=privateKey+no;
+          console.log(result);
+          FinalPrivateKey=jsonPrivateKeyData[result];
+          console.log(FinalPrivateKey);
+          this.setState({privateKey: FinalPrivateKey});
+          var postText=document.getElementById("postTextArea").value;
+          console.log(postText);
+
+          const hashDigest = sha256(postText);
+          this.setState({postTextHashHashDigesh:hashDigest});
+          console.log(hashDigest);
+          const cryptr = new Cryptr(FinalPrivateKey);
+          const encryptedString = cryptr.encrypt(postText);
+          console.log(encryptedString);
+          break;
+      }
+      
+    }
+    //
     var str = this.state.fullName;
     var array = str.split(" ");
     var array1=array[0];
@@ -502,9 +567,18 @@ class MainPage2  extends Component{
     console.log(final);
     //signatureText
     this.setState({ signatureText:final});
+    console.log(this.state.chromeExtensionData);
+
   }
 
-
+  checkEvent = (event) => {
+    
+    var data = event.detail;
+    console.log(data);
+    this.setState({chromeExtensionData:event});
+    console.log("Nv Enter:", event);
+    console.log(this.state.chromeExtensionData);
+    }
     actuallyPost=()=>{
         console.log("This is actually post ");
         console.log(this.state.groupInformationPassParameter);
@@ -591,6 +665,8 @@ class MainPage2  extends Component{
             console.log(arrayData);
             console.log(arrayData==undefined);
             var uuid = this.makeUUID(40);
+            console.log(this.state.photoSet)
+            console.log(this.state.videoSet)
             var userObj={
               postOwner:this.state.fullName,
               postHash:results[0].hash,
@@ -604,6 +680,9 @@ class MainPage2  extends Component{
               groupVersion:this.state.currentGroupVersion,
               
             }
+            this.setState({videoSet:"no"});
+            this.setState({photoSet:"no"});
+           
             console.log("Checking the data");
             console.log(userObj);
             console.log("------");
@@ -627,7 +706,7 @@ class MainPage2  extends Component{
 
             console.log("Json data");
             console.log(userObj);
-           
+            this.setState({ signatureText:''});
             window.open( 
               "http://localhost:8888/Facebook-sdk/facebooksdk/?url?=http://localhost:3000/MainPage/"+uuid, "_blank"); 
             // uuid=1;
@@ -827,7 +906,7 @@ class MainPage2  extends Component{
         fontFamily: "cursive",
         fontSize: "24px",
         color: "#00664b",
-        marginLeft:"610px"
+        marginLeft:"590px"
         
     }
     var signatureButton={
@@ -913,7 +992,11 @@ class MainPage2  extends Component{
                           </div>
                           <input type="text" style={username} name="username" placeholder="what's on your mind," required />  
                           <hr></hr>
-                          <Button style={addPost}  onClick={this.openPostModel}>Add Post</Button>
+                          <div>
+                          <Button style={addPost}  id="addPost"  onClick={this.openPostModel}  >Add Post</Button>
+                          </div>
+                          
+                          {/* <button type="button" id="addPost" >Click Me!</button> */}
                         </div>
                     </div>
                     </div>
@@ -992,21 +1075,20 @@ class MainPage2  extends Component{
                             <div class="float-left"style={signatureButton}>
                               <button type="button" class="btn btn-primary btn-sm" onClick={this.about3}  >Add Signature</button>
                             </div>
-
                             <div class="float-right">
                             <span style={postSignature}>{this.state.signatureText}</span>
                             </div>
-                            
                           </div>
-                          
-                          <div className="btn-group" role="group" aria-label="Basic example" >
+                           <hr style={{width:"40px",textAlign:"left",marginLeft:"710px",marginTop:"-15px",  position:"relative",borderTop: "7px solid" }}></hr> 
+                          {/* //style={{textAlign:"center"}} */}
+                          {/* <div className="btn-group" role="group" aria-label="Basic example" >
                             <button type="button" className="btn btn-primary"  onClick={this.about}>Image</button>
                             <button type="button" className="btn btn-secondary" 
         
                             style={{backgroundColor: "white",borderColor:"white"  }}
                             >Middle</button>
                             <button type="button" className="btn btn-secondary"onClick={this.about2}>Video</button>
-                        </div>
+                        </div> */}
                     </div>
                     <div>
                     <input type="file"  onChange={this.capturePostFile}/> 

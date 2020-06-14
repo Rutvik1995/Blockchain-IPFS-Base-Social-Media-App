@@ -21,6 +21,7 @@ import viewPost from './viewPost.js';
 import videoViewer from './videoViewer.js';
 import MainPage2 from './MainPage2.js';
 import viewPost2  from './viewPost2.js';
+import about from './about.js';
 
 // import { Form, Button, FormGroup, FormControl, ControlLabel,Card,ButtonToolbar } from "react-bootstrap";
 var ipfsClient = require('ipfs-http-client');
@@ -218,6 +219,7 @@ class App extends Component {
        <Route path='/videoViewer' component={videoViewer}></Route>
        <Route path='/MainPage2' component={MainPage2}></Route>
        <Route path='/viewPost3;' component={viewPost2}></Route>
+       <Route path='/about'component={about}></Route>
         </BrowserRouter>
     
         
