@@ -552,6 +552,7 @@ class MainPage2  extends Component{
           const cryptr = new Cryptr(FinalPrivateKey);
           const encryptedString = cryptr.encrypt(postText);
           console.log(encryptedString);
+          this.setState({postTextDigitalSignature:encryptedString});
           break;
       }
       
@@ -632,7 +633,8 @@ class MainPage2  extends Component{
 
             var myObj = {
               "postTextHash":postTextHash,
-              "postPicHash":postPicHash  
+              "postPicHash":postPicHash,
+              "digitalSignature":this.state.postTextDigitalSignature
             };
           //This is the the data which is enter by the user 
           
@@ -976,10 +978,10 @@ class MainPage2  extends Component{
                           </div>
                          
                         </ListGroup.Item>
-                        <ListGroup.Item style={mystyle} onClick={this.getFriends} >Friend List</ListGroup.Item>
+                         {/* <ListGroup.Item style={mystyle} onClick={this. getFriendsInform} >Friend List</ListGroup.Item>  */}
                         <ListGroup.Item style={mystyle} onClick={this.addProfilePic} >Add Profile Pic</ListGroup.Item>
-                        <ListGroup.Item style={mystyle} onClick={this.about}>About</ListGroup.Item>
-                        <ListGroup.Item style={mystyle}  onClick={this.getFriendsInform} >Vestibulum at eros</ListGroup.Item>
+                        {/* <ListGroup.Item style={mystyle} onClick={this.about}>About</ListGroup.Item> */}
+                        <ListGroup.Item style={mystyle}  onClick={this.getFriendsInform} >Friends</ListGroup.Item>
                       </ListGroup>
                       </div>
                     </div>

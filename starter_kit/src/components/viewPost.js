@@ -5,7 +5,7 @@ import { Button,Navbar,Nav,ListGroup,Modal,Card } from "react-bootstrap";
 import { MDBInput } from 'mdbreact';
 import './file.css'; 
 import { Player } from 'video-react';
-
+const Cryptr = require('cryptr');
 
 var ipfsClient = require('ipfs-http-client');
 var ipfs = ipfsClient({host:'ipfs.infura.io',port:'5001',protocol: 'https' }) ;
@@ -26,6 +26,7 @@ class viewPost  extends Component{
           currentUserEmailId:'',
           PostOwnerEmailId:'',
           PostOwnerFullName:'',
+          PostOwnerPublicKey:'',
           PostOwnerData:null,
           dataToParse:'',
           userInformationListFromBlockChain:[],
@@ -343,6 +344,20 @@ class viewPost  extends Component{
        console.log(tempPostHash);
 
       console.log(this.state.postUserGroupIPFSData);
+     for(var i=0;i<this.state.userInformationListFromBlockChain.length;i++){
+      console.log(this.state.userInformationListFromBlockChain[i].use);
+
+        if(this.state.userInformationListFromBlockChain[i].userEmailId==this.state.PostOwnerEmailId){
+          this.setState({PostOwnerPublicKey:this.state.userInformationListFromBlockChain[i].publickey})
+        }
+     }
+     console.log(this.state.PostOwnerPublicKey);
+     const cryptr = new Cryptr(this.state.PostOwnerPublicKey);
+
+     console.log(this.state.postUserGroupIPFSData.digitalSignature)
+     //const decryptedString = cryptr.decrypt(this.state.postUserGroupIPFSData.digitalSignature);
+    //  const decryptedString = cryptr.decrypt(this.state.postUserGroupIPFSData.digitalSignature);
+    // console.log(decryptedString);
 
       ipfs.get("/ipfs/"+this.state.PostOwnerData.postHash,(error,result)=>{
         var tempContent=result[0].content;
