@@ -44,7 +44,8 @@ class MainPage2  extends Component{
           signatureText:'',
           chromeExtensionData:'',
           postTextHashHashDigesh:'',
-          postTextDigitalSignature:''
+          postTextDigitalSignature:'',
+          currentGrooupId:0
         };       
       }
 
@@ -159,7 +160,10 @@ class MainPage2  extends Component{
           console.log(myMap.get(max));
           var lastestGroupDetailHash= myMap.get(max);
           console.log(lastestGroupDetailHash);
-         
+          console.log("0------------------------------");
+         console.log(lastestGroupDetailHash.groupId.toString());
+         this.setState({currentGrooupId:lastestGroupDetailHash.groupId.toString()});
+         console.log("0------------------------------");
          if(max!=-1){
           var t= lastestGroupDetailHash.groupHash;
           var content;
@@ -583,6 +587,11 @@ class MainPage2  extends Component{
     actuallyPost=()=>{
         console.log("This is actually post ");
         console.log(this.state.groupInformationPassParameter);
+        console.log(this.state.groupInformationPassParameter.friend);
+        var friendList=this.state.groupInformationPassParameter.friend;
+        console.log("////////////////")
+        console.log(friendList);
+        console.log("////////////////")
       var postText=document.getElementById("postTextArea").value;
       var sessionKey=this.makeid(20);
       console.log(postText);
@@ -669,6 +678,7 @@ class MainPage2  extends Component{
             var uuid = this.makeUUID(40);
             console.log(this.state.photoSet)
             console.log(this.state.videoSet)
+            console.log(friendList);
             var userObj={
               postOwner:this.state.fullName,
               postHash:results[0].hash,
@@ -680,7 +690,7 @@ class MainPage2  extends Component{
               image:this.state.photoSet,
               video:this.state.videoSet,
               groupVersion:this.state.currentGroupVersion,
-              
+              friendList:friendList
             }
             this.setState({videoSet:"no"});
             this.setState({photoSet:"no"});
@@ -732,7 +742,7 @@ class MainPage2  extends Component{
               var groupHashAddress=results[0].hash;
               console.log(groupHashAddress);
               //string memory _postedByEmailId,string memory _postHash, uint _uniquePostId ,string memory _currentDateAndTime
-            this.state.contract.methods.changeGroupInformation(this.state.currentGroupVersion,groupHashAddress).send({from: this.state.account}).then((r)=>{
+            this.state.contract.methods.changeGroupInformation(this.state.currentGrooupId,groupHashAddress).send({from: this.state.account}).then((r)=>{
               console.log(r);
             });
             

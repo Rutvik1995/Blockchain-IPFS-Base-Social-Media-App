@@ -129,7 +129,7 @@ class checkRequest2  extends Component{
        console.log(this.state.requestedFriendName);
      
        this.props.history.push({
-        pathname: '/MainPage',
+        pathname: '/MainPage2',
         userEmailId:this.state.userEmailId,
         fullName:this.state.fullName,
         userJsonResultOfParticularUserFromIPFS:this.state.userJsonResultOfParticularUserFromIPFS,
