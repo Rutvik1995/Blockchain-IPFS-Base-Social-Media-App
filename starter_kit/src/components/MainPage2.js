@@ -45,7 +45,8 @@ class MainPage2  extends Component{
           chromeExtensionData:'',
           postTextHashHashDigesh:'',
           postTextDigitalSignature:'',
-          currentGrooupId:0
+          currentGrooupId:0,
+          editTextArea:true
         };       
       }
 
@@ -526,6 +527,7 @@ class MainPage2  extends Component{
     this.setState({videoSet:"yes"});
   }
   about3=()=>{
+    document.getElementById("postTextArea").readOnly = true;
     console.log(this.state.chromeExtensionData);
     var message = this.state.chromeExtensionData.detail;
     var stringPrivateKeyData=message.privateKeyData;
@@ -746,7 +748,7 @@ class MainPage2  extends Component{
               console.log(r);
             });
             
-
+            document.getElementById("postTextArea").readOnly = true;
           });
 
             ///////
@@ -792,7 +794,7 @@ class MainPage2  extends Component{
       };
       const mystyle3={
         paddingLeft:"20px"
-      }
+     }
 
       var cardStyle={
         
@@ -877,6 +879,14 @@ class MainPage2  extends Component{
         display:"inline-block",
         fontSize:"20px"
         
+      }
+      var textAreaStyle={
+        border:"1px solid #bbb",
+        borderRadius:"20px",
+        display:"inline-block",
+        fontSize:"20px",
+        color:"rgb(66, 103, 178)",
+        width:"600px"
       }
       var addPost= {
         float: "right",
@@ -1073,7 +1083,8 @@ class MainPage2  extends Component{
                               <div style={name}><h4>{this.state.fullName}</h4></div>
                             </div>
                             <br></br>
-                            <MDBInput type="textarea"  id="postTextArea" rows="5" />     
+                            {/* <MDBInput type="textarea"  id="postTextArea" rows="5" required />      */}
+                            <textarea style={textAreaStyle} class="cstTextarea" id="postTextArea" rows="4" cols="50" placeholder="what's on you"></textarea>
                           </div>
                           {/* <div class="clearfix" style={signatureButton}>
                             <div class="pull-right">
