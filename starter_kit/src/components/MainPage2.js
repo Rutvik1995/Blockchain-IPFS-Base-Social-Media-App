@@ -46,7 +46,8 @@ class MainPage2  extends Component{
           postTextHashHashDigesh:'',
           postTextDigitalSignature:'',
           currentGrooupId:0,
-          editTextArea:true
+          editTextArea:true,
+          captionSetter:''
         };       
       }
 
@@ -656,7 +657,14 @@ class MainPage2  extends Component{
             const userContent= {
               content:originalContentString
           }
-         
+          var today = new Date();
+          var date = (today.getMonth()+1)+'-'+today.getDate()+'-'+today.getFullYear();
+          var message = " I have just create a new post at ";
+          var final1 = message+date;
+          var message2=". Just the section down bellow to view the post";
+          var final2=final1+message2;
+          this.setState({captionSetter:final2});
+          
           ipfs.add(userContent,(error,results)=>{
             console.log(results);
             postHash= results[0].hash;
@@ -1118,11 +1126,19 @@ class MainPage2  extends Component{
                     </div>
    
                     <hr></hr>
+
+                    <p style={name}>
+                      {this.state.captionSetter}
+                    </p>
+
                     <div style={{textAlign:"center"}}>
+
+
                     <Button className="LogIn2" alt="#" onClick={this.actuallyPost}>
                            Post
                     </Button>
                     </div>
+
                   </Modal.Body>
                   <Modal.Footer>
                   <Button onClick={this.closePostModel}>Done</Button>
