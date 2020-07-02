@@ -56,7 +56,20 @@ class viewPost  extends Component{
           firstChecker:0,
           secondChecker:0,
           vCondition:0,
-          globalUserData:''
+          globalUserData:'',
+          friend1GroupId:0,
+          friend2GroupId:0,
+          postOwnerHashValue:'',
+          currentUserValue:'',
+          postOwnerProfilePic:'',
+          currentUserProfilePic:'',
+          postOwnerLastestGroupId:0,
+          currentUserLastestGroupId:0,
+          currentUserObj:'',
+          postUserObj:'',
+          currentUserFinalData:'',
+          postUserFinalData:''
+
         };       
       }
       async componentWillMount(){
@@ -120,6 +133,17 @@ class viewPost  extends Component{
          }
         }
 
+
+         
+         for(var i=0;i<this.state.userInformationListFromBlockChain.length;i++){
+           console.log(this.state.userInformationListFromBlockChain[i].userEmailId==this.state.currentUserEmailId);
+             if(this.state.userInformationListFromBlockChain[i].userEmailId==this.state.currentUserEmailId){
+               console.log(this.state.userInformationListFromBlockChain[i].userHash)
+               this.setState({currentUserValue:this.state.userInformationListFromBlockChain[i].userHash})
+               console.log("Lets' see user hash");   
+             }
+         }
+
         var count=0;
        for(var i=0;i<this.state.groupInformationListFromBlockChain.length;i++){
         console.log(this.state.groupInformationListFromBlockChain[i]);
@@ -178,6 +202,17 @@ class viewPost  extends Component{
     }
 
     displayData3=()=>{
+      for(var i=0;i<this.state.userInformationListFromBlockChain.length;i++){
+        console.log(this.state.userInformationListFromBlockChain[i]);
+        console.log(this.state.PostOwnerEmailId);
+        console.log(this.state.userInformationListFromBlockChain[i].userEmailId);
+        console.log(this.state.userInformationListFromBlockChain[i].userEmailId==this.state.PostOwnerEmailId);
+           if(this.state.userInformationListFromBlockChain[i].userEmailId==this.state.PostOwnerEmailId){
+             console.log(this.state.userInformationListFromBlockChain[i].userHash)
+             this.setState({postOwnerHashValue:this.state.userInformationListFromBlockChain[i].userHash})
+             console.log("Lets' see user hash")
+           }
+       }
       console.log("in displaydata 3")
       console.log("Checking the first conditioon");
       console.log(this.state.originalPostContentForFriendList);
@@ -195,16 +230,72 @@ class viewPost  extends Component{
     }
 
     displayData4=()=>{
-      console.log("in display data 4");
-      console.log(this.state.globalUserData);
-      for(var i=0;i<this.state.globalUserData.friend.length;i++){
-        console.log(this.state.globalUserData.friend[i].name);
-        if(this.state.currentUserName==this.state.globalUserData.friend[i].name){ 
-          this.setState({secondChecker:1})
-          break;
+
+      // console.log("in display data 4");
+      // console.log(this.state.globalUserData);
+      // for(var i=0;i<this.state.globalUserData.friend.length;i++){
+      //   console.log(this.state.globalUserData.friend[i].name);
+      //   if(this.state.currentUserName==this.state.globalUserData.friend[i].name){ 
+      //     this.setState({secondChecker:1})
+      //     break;
+      //   }
+      // }
+      // this.displayData5();
+
+      console.log("adding in friend 1");
+      console.log(this.state.currentUserName);
+      console.log("Current Username");
+      console.log(this.state.currentUserEmailId);
+      console.log(this.state.groupInformationListFromBlockChain);
+      var dataArray=[];
+
+      for(var i=0;i<this.state.groupInformationListFromBlockChain.length;i++){
+        if(this.state.groupInformationListFromBlockChain[i].groupEmailId==this.state.currentUserEmailId){
+          dataArray.push(this.state.groupInformationListFromBlockChain[i]);
         }
       }
-      this.displayData5();
+
+      let myMap = new Map();
+      var max=-1;
+      for(var i=0;i<dataArray.length;i++){
+       var value=dataArray[i].groupVersion;
+       console.log(value);
+       value=value.toString();
+       myMap.set(value,dataArray[i]);
+       console.log(value);
+       if(value>max){
+         max=value;
+       }
+      }
+      console.log("lastest group version is");
+      console.log(max);
+      console.log(myMap.get(max));
+      var lastestGroupDetailHash= myMap.get(max);
+      console.log(lastestGroupDetailHash);
+      
+      if(max!=(-1)){
+        var currentgroupId=lastestGroupDetailHash.groupId;
+        console.log(currentgroupId);
+  
+  
+        //
+        ipfs.get("/ipfs/"+lastestGroupDetailHash.groupHash,(error,result)=>{
+          //console.log(result[0].path);
+          var content=result[0].content;
+          console.log(content);
+          var userData=JSON.parse(content);
+          console.log(userData);
+          for(var i=0;i<userData.friend.length;i++){
+            
+            if(userData.friend[i].emailId==this.state.PostOwnerEmailId){
+              this.setState({secondChecker:1})
+              break;
+            }
+          }
+          this.displayData5();
+      })
+      }
+
     }
 
     displayData5=()=>{
@@ -677,9 +768,56 @@ class viewPost  extends Component{
         console.log(this.state.userInformationListFromBlockChain);
         console.log("(((()))");
         console.log(this.state.groupInformationListFromBlockChain);
-        this.friend1();
-        this.friend2();
+       // this.GetInformation1();
+        this.CheckValue();
+       //this.friend1();
+        //this.friend2();
          
+      }
+
+      GetInformation1=()=>{
+        console.log("Hello Inside the function");
+        this.CheckValue();
+      }
+      pausecomp=(millis)=>{
+        console.log("in checking time");
+        var date = new Date();
+        var curDate = null;
+        do { curDate = new Date(); }
+        while(curDate-date < millis);
+        alert("Hello");
+        this.CheckValue();
+
+       }
+    
+      CheckValue=()=>{
+        console.log(this.state.postOwnerHashValue);
+
+        ipfs.get("/ipfs/"+this.state.postOwnerHashValue,(error,result)=>{
+          //console.log(result[0].path);
+          var content=result[0].content;
+          console.log(content);
+          var userData=JSON.parse(content);
+          console.log(userData);
+          this.setState({postOwnerProfilePic:userData.profilePicHash})
+          this.CheckValue2();
+      })
+        console.log(this.state.currentUserValue)
+      }
+      
+      CheckValue2=()=>{
+        ipfs.get("/ipfs/"+this.state.currentUserValue,(error,result)=>{
+          //console.log(result[0].path);
+          var content=result[0].content;
+          console.log(content);
+          var userData=JSON.parse(content);
+          console.log(userData);
+          this.setState({currentUserProfilePic:userData.profilePicHash})
+          this.friend1();
+          //this.friend2();
+          console.log(this.state.postOwnerProfilePic);
+          console.log(this.state.currentUserProfilePic);
+      })
       }
 
       friend1=()=>{
@@ -708,6 +846,10 @@ class viewPost  extends Component{
            max=value;
          }
         }
+
+
+
+
         console.log("lastest group version is");
         console.log(max);
         console.log(myMap.get(max));
@@ -716,7 +858,17 @@ class viewPost  extends Component{
         ///
         var currentgroupId=lastestGroupDetailHash.groupId;
         console.log(currentgroupId);
+        this.setState({currentUserLastestGroupId:currentgroupId});
+        console.log(this.state.postOwnerProfilePic);
 
+        var userObj={
+          name:this.state.currentUserName,
+          emailId:this.state.currentUserEmailId,
+          profilePicHash:this.state.currentUserProfilePic,
+          userId:currentgroupId
+        }
+        this.setState({currentUserObj:userObj});
+        console.log(userObj);
 
         //
         ipfs.get("/ipfs/"+lastestGroupDetailHash.groupHash,(error,result)=>{
@@ -725,8 +877,11 @@ class viewPost  extends Component{
           console.log(content);
           var userData=JSON.parse(content);
           console.log(userData);
+          this.setState({currentUserFinalData:userData});
+          this.friend2();
       })
       }
+
 
       friend2=()=>{
         console.log("adding in friend 2"); 
@@ -759,16 +914,83 @@ class viewPost  extends Component{
         var currentgroupId=lastestGroupDetailHash.groupId;
         console.log(currentgroupId);
 
-        ///
+        this.setState({postOwnerLastestGroupId:currentgroupId});
 
+        ///
+        var userObj={
+          name:this.state.PostOwnerFullName,
+          emailId:this.state.PostOwnerEmailId,
+          profilePicHash:this.state.postOwnerProfilePic,
+          userId:currentgroupId,
+          userHash:this.state.postOwnerHashValue
+        }
+        this.setState({postUserObj:userObj});
+        console.log(userObj);
         ipfs.get("/ipfs/"+lastestGroupDetailHash.groupHash,(error,result)=>{
           //console.log(result[0].path);
           var content=result[0].content;
           console.log(content);
           var userData=JSON.parse(content);
           console.log(userData);
+          this.setState({postUserFinalData:userData});
+          this.lastFunction();
       })
+      
       }
+
+      lastFunction=()=>{
+        console.log(this.state.postUserObj);
+        console.log(this.state.currentUserObj);
+        console.log(this.state.currentUserFinalData);
+        
+        console.log(this.state.postUserFinalData);
+        this.state.currentUserFinalData.request.push(this.state.postUserObj);
+        this.state.postUserFinalData.requestNotAccepted.push(this.state.currentUserObj);
+
+        console.log(this.state.currentUserFinalData);
+        console.log(this.state.postUserFinalData);
+
+        var originalContentString = Buffer.from(JSON.stringify(this.state.postUserFinalData));
+        console.log(this.state.postOwnerLastestGroupId.toString());
+        // The json is change to string format 
+        let userContent= {
+          content:originalContentString
+      }
+      ///
+      ipfs.add(userContent,(error,results)=>{
+
+        var groupHashAddress=results[0].hash;
+        console.log(groupHashAddress);
+        //string memory _postedByEmailId,string memory _postHash, uint _uniquePostId ,string memory _currentDateAndTime
+      this.state.contract.methods.changeGroupInformation(this.state.postOwnerLastestGroupId.toString(),groupHashAddress).send({from: this.state.account}).then((r)=>{
+        console.log(r);
+      });
+    
+    });
+
+/////
+console.log(this.state.currentUserLastestGroupId.toString())
+
+originalContentString = Buffer.from(JSON.stringify(this.state.currentUserFinalData));
+console.log(this.state.postOwnerLastestGroupId);
+// The json is change to string format 
+ userContent= {
+  content:originalContentString
+}
+///
+ipfs.add(userContent,(error,results)=>{
+
+var groupHashAddress=results[0].hash;
+console.log(groupHashAddress);
+//string memory _postedByEmailId,string memory _postHash, uint _uniquePostId ,string memory _currentDateAndTime
+this.state.contract.methods.changeGroupInformation(this.state.currentUserLastestGroupId.toString(),groupHashAddress).send({from: this.state.account}).then((r)=>{
+console.log(r);
+});
+
+});
+
+
+    }
 
 
       render(){
@@ -1269,6 +1491,7 @@ else{
                   </div>
                   <h4>Want to see the post add {this.state.PostOwnerFullName} </h4>
                   <Button variant="primary"  onClick={this.addFriend} >Add Friend</Button>
+                  {/* <Button variant="primary"  onClick={this.CheckValue} >Add Friend2</Button> */}
                   {/* <button type="button"  onClick={this.addFriend()}   >Click Me!</button> */}
                 </div>
               </div>
