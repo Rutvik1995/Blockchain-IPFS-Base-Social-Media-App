@@ -7,17 +7,16 @@ contract Meme{
     mapping(address=>bool) public checkFunction;
 
   struct userHash{
-        uint userId;
-        string userEmailId;
+        uint Id;
+        string userId;
         string userHash;
         string publickey;
     }
 
     struct groupHash{
         uint groupId;
-        string groupEmailId;
+        string groupOwnerUserId;
         string groupHash;
-        uint groupVersion;
     }
     struct postHash{
         uint postId;
@@ -26,15 +25,23 @@ contract Meme{
         string uuid;
     }
 
+struct friendRequestHash{
+        uint friendRequestId;
+        string fiendRequestHash;
+    }
+
+
+
     //Write function
   
        mapping(uint=>userHash) public userInformation;
        mapping(uint=>groupHash) public groupInformation;
        mapping(uint=>postHash) public postInformation;
+       mapping(uint=>friendRequestHash) public friendRequestInformation;
 
-    function addUser(string memory _userEmailId,string memory _userHash,string memory _publicKey) public {
+    function addUser(string memory _userId,string memory _userHash,string memory _publicKey) public {
         userCount++;
-         userInformation[userCount]= userHash(userCount,_userEmailId,_userHash, _publicKey);
+         userInformation[userCount]= userHash(userCount,_userId,_userHash, _publicKey);
      }
 
     uint public userCount=0;
@@ -48,6 +55,28 @@ contract Meme{
             userInformation[_userId].userHash=k;
         }
     }
+
+    uint public friendRequestCount=0;
+
+    function addFriendRequestInformation(string memory _friendRequestHash) public {
+         friendRequestCount++;
+         friendRequestInformation[1]= friendRequestHash( 1,_friendRequestHash);
+     }
+
+
+    function changeFriendRequestInformation(uint  _friendRequestId,string memory _newHash) public {
+        uint checkId = _friendRequestId;
+        string memory newHash=_newHash;
+       // require((checkId<= userCount) && (checkId>0), “message to be displayed”);
+        
+            string memory k= friendRequestInformation[_friendRequestId].fiendRequestHash;
+            k=newHash;
+            friendRequestInformation[_friendRequestId].fiendRequestHash=k;
+        
+    }
+
+
+
 
 
     function changeGroupInformation(uint  _userId,string memory _newHash) public {
@@ -65,10 +94,11 @@ contract Meme{
 
 
 
+
     uint public groupCount=0;
-    function createGroup(string memory _groupEmailId,string memory _groupHash, uint  _versionId)  public {
+    function createGroup(string memory _groupOwnerUserId,string memory _groupHash)  public {
         groupCount++;
-        groupInformation[groupCount]=groupHash(groupCount,_groupEmailId,_groupHash,_versionId);
+        groupInformation[groupCount]=groupHash(groupCount,_groupOwnerUserId,_groupHash);
     }
 
   

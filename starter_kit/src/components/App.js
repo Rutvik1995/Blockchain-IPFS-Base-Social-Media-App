@@ -8,6 +8,8 @@ import Meme from '../abis/Meme.json';
 // import { MDBCol, MDBInput } from "mdbreact";
 import {  RSA } from 'hybrid-crypto-js';
 import register from './register.js';
+import register2 from './register2.js';
+import login2 from './login2';
 import login from './login.js';
 import MainPage from './MainPage.js';
 import addProfilePic from './addProfilePic.js';
@@ -17,9 +19,11 @@ import middle from './middle.js';
 import timeline from './timeline.js';
 import checkRequest2 from './checkRequest2.js';
 import searchFriends2 from './searchFriends2.js';
+import searchFriends3 from './searchFriends3.js';
 import viewPost from './viewPost.js';
 import videoViewer from './videoViewer.js';
 import MainPage2 from './MainPage2.js';
+import MainPage3 from './MainPage3.js';
 import viewPost2  from './viewPost2.js';
 import about from './about.js';
 
@@ -39,20 +43,17 @@ class App extends Component {
 
     }
 
-    // Get the account 
-    // Get the network
-    // Get Smart contract
-    // Get the Meme Hash 
+ 
 
  
     async loadBlockChainData(){
       var web3 = window.web3;
       var accounts = await web3.eth.getAccounts();
-      console.log(accounts);
+     // console.log(accounts);
       this.setState({account:accounts[0]})
       const networkId= await web3.eth.net.getId();
      // const networkData =Meme.networks[networkId];
-      console.log(networkId);
+     // console.log(networkId);
 
       // if(networkId){
       //   //Fetch the smart contract
@@ -104,36 +105,7 @@ class App extends Component {
       while(curDate-date < millis);
      }
 
-    handleClick=()=>{
-      var firstName=document.getElementById("firstName").value;
-      var lastName =document.getElementById("lastName").value;
-      var emailId = document.getElementById("emailId").value;
-      var password = document.getElementById("password").value;
-      console.log(firstName);
-      
-    var myObj = {
-      "firstName":firstName,
-      "lastName":lastName,
-      "fullName":firstName+" "+lastName,
-      "password":password,
-      "emailId":emailId,
-    }
-    var originalContentString = Buffer.from(JSON.stringify(myObj));
-
-    ipfs.add(originalContentString ,(error,results)=>{
-      this.setState({IPFSuserInformationHash:results})      
-    });
-    this.pausecomp(5500);
-
-    
-      rsa.generateKeyPair(function(keyPair) {
-              // Callback function receives new key pair as a first argument
-            console.log(keyPair.publicKey);
-            console.log(keyPair.privateKey);
-      });
-       console.log(this.state.IPFSuserInformationHash);
-
-    }
+ 
 
 
   // Hash QmNZNHWxYqPY57bodafqkzqmXYVu9LE3FteJhMmZGBackw
@@ -141,7 +113,7 @@ class App extends Component {
 
   onSubmit=(event)=>{
     event.preventDefault();
-    console.log("in submit event");
+    //console.log("in submit event");
 
     
     var myObj = {
@@ -172,7 +144,7 @@ class App extends Component {
 
   render() {
 
-    console.log(this.state.IPFSuserInformationHash);
+  
 
 
 
@@ -195,7 +167,7 @@ class App extends Component {
      phone:'9837363739'
    }
  ]
-  console.log(contacts);
+  //console.log(contacts);
   const listItems = contacts.map((contact) =>
   <li>{contact.name}</li>
 );
@@ -208,6 +180,7 @@ class App extends Component {
         
         <Route path='/register' component={register}></Route>
         <Route path='/login' component={login}></Route>
+        <Route path='/login2' component={login2}></Route>
         <Route path='/MainPage' component={MainPage}></Route>
         <Route path='/addProfilePic' component={addProfilePic}></Route>
         <Route path='/searchFriends' component={searchFriends}></Route>
@@ -215,11 +188,16 @@ class App extends Component {
        <Route path='/timeline' component={timeline }></Route>
        <Route path='/checkRequest2' component={checkRequest2 }></Route>
        <Route path='/searchFriends2' component={searchFriends2}></Route>
+       <Route path='/searchFriends3' component={searchFriends3}></Route>
        <Route path='/viewPost' component={viewPost}></Route>
        <Route path='/videoViewer' component={videoViewer}></Route>
        <Route path='/MainPage2' component={MainPage2}></Route>
        <Route path='/viewPost3;' component={viewPost2}></Route>
        <Route path='/about'component={about}></Route>
+       <Route path="/middle" component={middle}></Route>
+       <Route path="/register2" component={register2}></Route>
+       <Route path="/MainPage3" component={MainPage3}></Route>
+      
         </BrowserRouter>
     
         
