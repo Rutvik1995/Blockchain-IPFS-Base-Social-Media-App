@@ -30,8 +30,8 @@ region = "us-east-1",
 
     var client = new AWS.SecretsManager({
         region: region,
-        accessKeyId: "AKIAWWXYWF2RYZXUYVWR",
-        secretAccessKey:"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"
+        accessKeyId: "",
+        secretAccessKey:""
     });
 
     AWS.config.region = 'us-east-1'; // Region
