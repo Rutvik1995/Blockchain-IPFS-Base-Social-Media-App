@@ -1,0 +1,100 @@
+.mystyle  {
+    text-align: center;
+    font: inherit;
+    border: 2px solid #365899;
+    padding: 13px 12px;
+    font-size: 15px;
+    box-shadow: 0 1px 1px #DDD;
+    width: 700px;
+    outline: none;
+    display: block;
+    color: #788585;
+    margin: 0 auto 20px;
+    height:50px;
+   
+  };
+  .ReactHeading {
+
+   color:#365899;
+  font-size: 25px;
+  text-transform: uppercase;
+  font-weight: 300;
+  text-align: center;
+  margin-bottom: 15px;
+  padding-bottom:20px;
+  font-family:RalewayBold,Arial,sans-serif;
+}
+.cardBorder{
+padding: 10px;
+margin:10px;
+border: 2px solid #365899;
+
+}
+.cardStyle2{
+
+  padding:10px 10px 10px 10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+}
+.card{
+  box-shadow:0px 0px 0.5px rgba(10,10,10,.3);
+  align-items:center;
+  position:relative;
+  user-select:none;
+  overflow:hidden;
+  transition:all .5s ease;
+  padding:10px;
+  width:850px;
+  height:280px;
+  max-width:100%;
+  background-color:white;
+  margin-bottom:10px;
+  font-size:14px;
+  border-radius:3px;
+  border-style: solid;
+  border-color: #365899;
+}
+.card2{
+  box-shadow:0px 0px 0.5px rgba(10,10,10,.3);
+  align-items:center;
+  position:relative;
+  user-select:none;
+  overflow:hidden;
+  transition:all .5s ease;
+  padding:10px;
+  width:950px;
+  height:280px;
+  max-width:100%;
+  background-color:white;
+  margin-bottom:10px;
+  font-size:14px;
+  border-radius:"3px",
+ 
+}
+.info{
+    display:flex;
+    align-Items:center;
+    height:40px;
+  }
+.photo{
+    height:40px;
+    width:40px;
+    background-color:gray;
+    opacity:.8;
+    border-radius:100%;
+  }
+.name{
+  
+    font-weight:bold;
+    color:rgb(66, 103, 178);
+    opacity:.9;
+    padding-left:20px;
+}
+
+.postSignature {
+  font-family: Great Vibes;
+  font-size: 36px;
+  color: #BF2847; 
+}
