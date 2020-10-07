@@ -7,7 +7,7 @@ import { Button,Card,Form } from "react-bootstrap";
 //IPFS
 var ipfsClient = require('ipfs-http-client');
 var ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
-
+//var ipfs = ipfsClient({host:'ipfs.infura.io',port:'5001',protocol: 'https' }) ;;
 //Crypto
 var CryptoJS = require("crypto-js");
 var SHA256 = require("crypto-js/sha256");
@@ -76,11 +76,13 @@ class login2  extends Component{
             })
 
             //console.log(this.state.userInformationListFromBlockChain)
-            ipfs.get("/ipfs/"+userInformationListFromBlockChain.userHash,(error,result)=>{
-
+            //ipfs.get("/ipfs/"+userInformationListFromBlockChain.userHash,(error,result)=>{
+              console.log(userInformationListFromBlockChain.userId);
+              ipfs.files.read("/user/"+userInformationListFromBlockChain.userId+"/userInformationTable",(error,result)=> {
                // console.log(result[0]);
-                 var userJsonResult = JSON.parse(result[0].content);
-                 //console.log(userJsonResult);
+                 var userJsonResult = JSON.parse(result);
+              
+                 console.log(userJsonResult);
                  this.setState({
                     userInformationFromIPFS:[...this.state.userInformationFromIPFS, userJsonResult]
                   })

@@ -33,14 +33,19 @@ secretName = "MyDemoSecret",
 
 client = new AWS.SecretsManager({
   region: region,
-  accessKeyId: "",
-  secretAccessKey:""
+  accessKeyId: "AKIAWWXYWF2RZUH2IJP6",
+  secretAccessKey:"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"
 });
 
 
 
 
-
+ // Create a Secrets Manager client
+// var client = new AWS.SecretsManager({
+//   region: region,
+//   accessKeyId: "AKIAWWXYWF2RYZXUYVWR",
+//   secretAccessKey:"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"
+// });
 
 class searchFriends3 extends Component{
 
@@ -142,9 +147,11 @@ class searchFriends3 extends Component{
             })
 
             //console.log(this.state.userInformationListFromBlockChain)
-            ipfs.get("/ipfs/"+userInformationListFromBlockChain.userHash,(error,result)=>{
+            
+          
+              ipfs.files.read("/user/"+userInformationListFromBlockChain.userId+"/userInformationTable",(error,result)=> {
                // console.log(result[0]);
-                 var userJsonResult = JSON.parse(result[0].content);
+                 var userJsonResult = JSON.parse(result);
                  console.log(userJsonResult);
                  this.setState({
                     userInformationFromIPFS:[...this.state.userInformationFromIPFS, userJsonResult]
@@ -171,10 +178,13 @@ class searchFriends3 extends Component{
             console.log(groupInformationListFromBlockChain)
               this.setState({
                 groupInformationListFromBlockChain:[...this.state.groupInformationListFromBlockChain, groupInformationListFromBlockChain]
-             })
+             }) 
+             console.log(groupInformationListFromBlockChain.groupOwnerUserId);
+             console.log(this.state.userId);
             if(groupInformationListFromBlockChain.groupOwnerUserId==this.state.userId){
-              ipfs.get("/ipfs/"+groupInformationListFromBlockChain.groupHash,(error,result)=>{
-                var groupJsonResult = JSON.parse(result[0].content);
+              ipfs.files.read("/user/"+groupInformationListFromBlockChain.groupOwnerUserId+"/groupInformationTable",(error,result)=> {
+              //ipfs.get("/ipfs/"+groupInformationListFromBlockChain.groupHash,(error,result)=>{
+                var groupJsonResult = JSON.parse(result);
                  console.log(groupJsonResult);
                  this.setState({groupInformationFromIPFS:groupJsonResult});
               });
@@ -183,19 +193,23 @@ class searchFriends3 extends Component{
           }
 
 
-          // getting userPrivate key 
+          // getting Friend request information 
           const friendRequestListFromBlockChain= await contract.methods.friendRequestInformation(1).call();
           console.log(friendRequestListFromBlockChain);
-          ipfs.get("/ipfs/"+friendRequestListFromBlockChain.fiendRequestHash,(error,result)=>{
+          ipfs.files.read("/friendRequestInformation/friendRequestInformation",(error,result)=> {
+          //ipfs.get("/ipfs/"+friendRequestListFromBlockChain.fiendRequestHash,(error,result)=>{
             console.log(result);
-            var result = JSON.parse(result[0].content);
-             console.log(result);
-             for(var i=0;i<result.length;i++){
-              this.setState({
-                request:[...this.state.request, result]
-              })
-             }
+            var result = JSON.parse(result);
+            console.log(result);
+            this.setState({request:result});
+            //  console.log(result);
+            //  for(var i=0;i<result.length;i++){
+            //   this.setState({
+            //     request:[...this.state.request, result]
+            //   })
+            //  }
 console.log(this.state.request);
+
           });
 
 
@@ -203,7 +217,7 @@ console.log(this.state.request);
 //
 
 
-this.pausecomp(2000)
+this.pausecomp(3000)
 console.log("after timeout");
 this.setState({userPrivateKey:privateKey});
 console.log(this.state.userPrivateKey);
@@ -231,12 +245,13 @@ console.log(this.state.userPrivateKey);
           var mainArray=[]
 
             var requestObj={
-              requestId:1,
+              requestId:uuidv4(),
               requestFromUserId:this.state.userId,
               requestFromUserFullName:this.state.fullName,
               requestToUserId:data.userId,
               requestToUserFullName:data.fullName,
-              groupMembers:[],
+              groupId:this.state.groupInformationFromIPFS.groupId,
+              groupInformation:[],
               activeStatus:"pending"
             }
             console.log(requestObj);
@@ -245,52 +260,87 @@ console.log(this.state.userPrivateKey);
             var publicKeyOfOtherUser=this.state.publicKeyMap.get(data.userId);
             console.log(publicKeyOfOtherUser);
 
-            var ciphertext;
-          
-            var privateKey=this.getPrivateKey();
-            console.log(privateKey);
-            
-            for(var i=0;i<this.state.groupInformationFromIPFS.length;i++){
-              console.log(this.state.groupInformationFromIPFS[i]);
-              var current =this.state.groupInformationFromIPFS[i]
-              var secretId=this.state.userId
+            console.log(this.state.groupInformationFromIPFS.groupInformation);
+            var groupInformation= this.state.groupInformationFromIPFS.groupInformation;
+           // console.log(this.state.groupInformationFromIPFS.groupInformationFromIPFS);
+            console.log(groupInformation);
+            var groupInformationForRequest=[];
+
+            for(var i=0;i<groupInformation.length;i++){
+               console.log(groupInformation[i]);
+               var groupInformationOfParticularArray= groupInformation[i];
+               console.log(groupInformationOfParticularArray);
+               console.log("-----");
+
+
+               var  encryptedGroupKey;
+               var groupKeyVersion=groupInformationOfParticularArray.groupKeyVersion;
+               for(var j=0;j<groupInformationOfParticularArray.groupMembers.length;j++){
+                var groupMember= groupInformationOfParticularArray.groupMembers[j];
+                   console.log(groupMember);
+                   if(groupMember.userId==this.state.userId){
+                    var groupKeyInOrginalForm = crypt.decrypt(this.state.userPrivateKey, groupMember.encryptedGroupKey);
+                    console.log(groupKeyInOrginalForm);
+                    console.log(groupKeyInOrginalForm.message );
+
+                    var t =groupKeyInOrginalForm.message.toString();
+                    encryptedGroupKey  = crypt.encrypt(publicKeyOfOtherUser,t);
+                    console.log(encryptedGroupKey)
+                    var requestInformationObj={
+                      groupVersion:groupKeyVersion,
+                      encryptedGroupKey:encryptedGroupKey
+                    }
+                    requestObj.groupInformation.push(requestInformationObj);
+                    //groupInformationForRequest.push(requestInformationObj);
+                   }
+
+                  
+               }
+            }
+
+            console.log(requestObj);
+            // for(var i=0;i<this.state.groupInformationFromIPFS.length;i++){
+            //   console.log(this.state.groupInformationFromIPFS[i]);
+            //   var current =this.state.groupInformationFromIPFS[i]
+            //   var secretId=this.state.userId
               
-                
+            //     console.log(this.state.userPrivateKey);
+            //     console.log(current.encryptedGroupKey);
                
-                var groupKeyInOrginalForm = crypt.decrypt(this.state.userPrivateKey, current.encryptedGroupKey);
-                console.log(groupKeyInOrginalForm);
+            //     var groupKeyInOrginalForm = crypt.decrypt(this.state.userPrivateKey, current.encryptedGroupKey);
+            //     console.log(groupKeyInOrginalForm);
 
-                console.log(groupKeyInOrginalForm.message );
+            //     console.log(groupKeyInOrginalForm.message );
 
-                var t =groupKeyInOrginalForm.message.toString();
-               var  encryptedGroupKey= crypt.encrypt(publicKeyOfOtherUser,t);
-                console.log(encryptedGroupKey)
+            //     var t =groupKeyInOrginalForm.message.toString();
+            //    var  encryptedGroupKey= crypt.encrypt(publicKeyOfOtherUser,t);
+            //     console.log(encryptedGroupKey)
 
-                var groupMember={
-                  groupId:current.groupId,
-                  encryptedGroupKey:encryptedGroupKey,
-                  groupVersion:current.groupVersion
-                }
+            //     var groupInformation={
+            //       groupId:current.groupId,
+            //       encryptedGroupKey:encryptedGroupKey,
+            //       groupVersion:current.groupVersion
+            //     }
                 
-                requestObj.groupMembers.push(groupMember);
-                console.log(requestObj);
-                // ciphertext = CryptoJS.AES.encrypt(groupKeyInOrginalForm.message, publicKeyOfOtherUser).toString();
-                // console.log(ciphertext);
+            //     requestObj.groupInformation.push(groupInformation);
+            //     console.log(requestObj);
+            //     // ciphertext = CryptoJS.AES.encrypt(groupKeyInOrginalForm.message, publicKeyOfOtherUser).toString();
+            //     // console.log(ciphertext);
 
-                console.log("after this");
+            //     console.log("after this");
 
    
 
            
-              console.log(this.state.groupInformationFromIPFS.length);
-              console.log(this.state.request);
-               if(i==this.state.groupInformationFromIPFS.length-1){
-                console.log(this.state.request);
-                 console.log(requestObj);
-                 console.log(this.state.request);
-                 this.state.request.push(requestObj)
-                console.log(this.state.request); 
-                 var stringGroupObj = Buffer.from(JSON.stringify(this.state.request));
+            //   console.log(this.state.groupInformationFromIPFS.length);
+            //   console.log(this.state.request);
+            //    if(i==this.state.groupInformationFromIPFS.length-1){
+            //     console.log(this.state.request);
+            //      console.log(requestObj);
+                  console.log(this.state.request);
+                  this.state.request.push(requestObj)
+                 console.log(this.state.request); 
+                  var stringGroupObj = Buffer.from(JSON.stringify(this.state.request));
       
                  
                  ipfs.files.write('/friendRequestInformation/friendRequestInformation',stringGroupObj, { create: true },(error,results)=>{
@@ -310,8 +360,8 @@ console.log(this.state.userPrivateKey);
 
               
 
-                }
-            }
+            //     }
+            // }
             
 
 
@@ -324,6 +374,10 @@ console.log(this.state.userPrivateKey);
           while(curDate-date < millis);
 
          }
+         updateSearch=(event)=>{
+          //  console.log(event.target.value);
+            this.setState({search:event.target.value.substr(0,20)})      
+           }
 
          mainPage=()=>{
           this.props.history.push({
@@ -406,6 +460,7 @@ console.log(this.state.userPrivateKey);
 <div className="container text-center ">
             <h2 className="ReactHeading">Search Friends</h2>
              <input type ="text" className="mystyle" placeholder="Search Friend By Name" value={this.state.search} onChange={this.updateSearch}  />
+           
             <br></br>
              <hr></hr>    
             { list2      }

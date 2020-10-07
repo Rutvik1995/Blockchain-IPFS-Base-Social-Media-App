@@ -30,8 +30,8 @@ region = "us-east-1",
 
     var client = new AWS.SecretsManager({
         region: region,
-        accessKeyId: "",
-        secretAccessKey:""
+        accessKeyId: "AKIAWWXYWF2RZUH2IJP6",
+        secretAccessKey:"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"
     });
 
     AWS.config.region = 'us-east-1'; // Region
@@ -107,7 +107,7 @@ class register2  extends Component{
           console.log(lastName);
           console.log(emailId);
           console.log(password);
-          var userId=uuidv4()
+          var userId=uuidv4();
           
         // encrypting the password
         var encryptedPassword = CryptoJS.SHA256(password).toString();
@@ -184,24 +184,33 @@ class register2  extends Component{
             "groupId":groupId,
             "groupOwnerUserId":userId,
             "fullName":fullName,
-            "encryptedGroupKey": encryptedGroupKey,
-            "groupVersion":1,
-            groupMember:[]
+            // "encryptedGroupKey": encryptedGroupKey,
+            groupInformation:[],
+            "groupKeyVersion":1,
+            
         }
+       
+        var groupInformationObj={
+          "groupKeyVersion":1,
+          groupMembers:[]
+        }
+        groupUserObj.groupInformation.push(groupInformationObj);
+       
+        console.log(groupUserObj);
 
         var userGroupMemberInformation={
             "userId":userId,
             "fullName":fullName,
             "encryptedGroupKey": encryptedGroupKey,
         }
-        
-        groupUserObj.groupMember.push(userGroupMemberInformation);
+        groupUserObj.groupInformation[0].groupMembers.push(userGroupMemberInformation);
+       // groupUserObj.groupMembers.push(userGroupMemberInformation);
         console.log(groupUserObj);
 
-        groupInformationArray.push(groupUserObj);
+
         console.log(groupInformationArray);
        
-        var stringGroupObj = Buffer.from(JSON.stringify(groupInformationArray));
+        var stringGroupObj = Buffer.from(JSON.stringify(groupUserObj));
         console.log(stringGroupObj);
         ipfs.files.write('/user/'+userId+"/"+"groupInformationTable",stringGroupObj, { create: true },(error,results)=>{
             console.log("inside");
