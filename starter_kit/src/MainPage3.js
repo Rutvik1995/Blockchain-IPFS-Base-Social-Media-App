@@ -91,9 +91,10 @@ class MainPage3  extends Component{
             })
 
             //console.log(this.state.userInformationListFromBlockChain)
-            ipfs.get("/ipfs/"+userInformationListFromBlockChain.userHash,(error,result)=>{
+            
+              ipfs.files.read("/user/"+userInformationListFromBlockChain.userId+"/userInformationTable",(error,result)=> {
                // console.log(result[0]);
-                 var userJsonResult = JSON.parse(result[0].content);
+                 var userJsonResult = JSON.parse(result);
                  //console.log(userJsonResult);
                  this.setState({
                     userInformationFromIPFS:[...this.state.userInformationFromIPFS, userJsonResult]
@@ -136,7 +137,12 @@ class MainPage3  extends Component{
 
         })
        }
+       checkFriendRequest=()=>{
+        this.props.history.push({
+          pathname: '/checkRequest3/'+this.state.userId,
 
+        })
+       }
        signOut=()=>{
         this.props.history.push({
           pathname: '/login2',
