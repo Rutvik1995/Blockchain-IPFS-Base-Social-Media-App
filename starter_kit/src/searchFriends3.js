@@ -33,19 +33,11 @@ secretName = "MyDemoSecret",
 
 client = new AWS.SecretsManager({
   region: region,
-  accessKeyId: "AKIAWWXYWF2RZUH2IJP6",
-  secretAccessKey:"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"
+  accessKeyId: "",
+  secretAccessKey:""
 });
 
 
-
-
- // Create a Secrets Manager client
-// var client = new AWS.SecretsManager({
-//   region: region,
-//   accessKeyId: "AKIAWWXYWF2RYZXUYVWR",
-//   secretAccessKey:"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"
-// });
 
 class searchFriends3 extends Component{
 
