@@ -33,8 +33,8 @@ secretName = "MyDemoSecret",
 
 client = new AWS.SecretsManager({
   region: region,
-  accessKeyId: "AKIAWWXYWF2R5ZCDG4UV",
-  secretAccessKey:"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"
+  accessKeyId: "",
+  secretAccessKey:""
 });
 
 
