@@ -222,6 +222,18 @@ class removeFriend  extends Component{
       while(curDate-date < millis);
 
      }
+     mainPage=()=>{
+      this.props.history.push({
+        pathname: '/MainPage3/'+this.state.userId,
+      })
+     }
+
+     signOut=()=>{
+      this.props.history.push({
+        pathname: '/login2',
+         // your data array of objects
+      })
+     }
 
      generateHexString=()=> {
       var ret = "";
@@ -307,6 +319,70 @@ class removeFriend  extends Component{
         })
       })
 
+
+      console.log("After removing friend from user itself. Application also need to update friend list and remove user from their friend group");
+
+
+      var groupInformationTable2=this.state.groupInformationMap.get(data.userId);
+      console.log(groupInformationTable2);
+      var groupInformation2=groupInformationTable2.groupInformation;
+      console.log(groupInformation2);
+      var groupVersionLength2=groupInformation2.length;
+      var friendList2=groupInformation2[groupVersionLength2-1].groupMembers;
+      console.log(friendList2);
+      var groupKey2=this.generateHexString();
+
+      //
+      var groupInformationObj2={
+        groupKeyVersion:groupVersionLength2+1,
+        groupMembers:[]
+      }
+      console.log(groupInformationObj2);
+      var groupMembers2=[]
+      for(var i=0;i<friendList2.length;i++){
+        var publicKeyOfFriend2=this.state.publicKeyMap.get(friendList2[i].userId)
+        var encryptedGroupKey2= crypt.encrypt(publicKeyOfFriend2,groupKey2 );
+
+        var userObj2={
+          userId:friendList2[i].userId,
+          fullName:friendList2[i].fullName,
+          encryptedGroupKey:encryptedGroupKey2
+        }
+
+        if(this.state.userId==friendList2[i].userId){
+
+        }
+        else{
+          groupMembers2.push(userObj2);
+        }
+      }
+      console.log(groupMembers2);
+      groupInformationObj2.groupMembers=groupMembers2;
+      console.log(groupInformationObj2);
+      groupInformationTable2.groupInformation.push(groupInformationObj2);
+      console.log(groupInformationTable2);
+
+      var stringGroupObj2 = Buffer.from(JSON.stringify(groupInformationTable2));
+      ipfs.files.write('/user/'+data.userId+"/"+"groupInformationTable",stringGroupObj2, { create: true },(error,results)=>{
+        console.log("inside");
+        console.log(results);
+          ipfs.files.stat('/user/'+data.userId+"/"+"/groupInformationTable", (error,results)=>{
+            console.log("inside");
+          console.log(results);
+          var id = this.state.blockChainIdforUserMap.get(data.userId);
+
+          this.state.contract.methods.changeGroupInformation(id,results.hash).send({from: this.state.account}).then((r)=>{
+            console.log(r);
+            console.log("done");
+        });
+
+        })
+      })
+
+
+
+
+
      }
 
 
@@ -365,7 +441,7 @@ class removeFriend  extends Component{
               </Navbar.Collapse>
               </Navbar>
               <div className="container text-center ">
-           <h2 className="ReactHeading">Check Friend Request</h2>
+           <h2 className="ReactHeading">Friend</h2>
            <hr></hr> 
            
         {list}
