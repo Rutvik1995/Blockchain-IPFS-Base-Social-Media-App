@@ -3,6 +3,9 @@ import Web3 from 'web3';
 import Meme from '../abis/Meme.json';
 import { Button,Navbar,Nav,ListGroup,Modal,Card } from "react-bootstrap";
 import { MDBInput } from 'mdbreact';
+import { Crypt, RSA } from 'hybrid-crypto-js';
+import { v4 as uuidv4 } from 'uuid';
+
 
 import './MainPage.css';
 
@@ -10,10 +13,25 @@ import './MainPage.css';
 var ipfsClient = require('ipfs-http-client');
 var ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
 
+var ipfs2 = ipfsClient({host:'ipfs.infura.io',port:'5001',protocol: 'https' }) ;;
+
 //Crypto
 var CryptoJS = require("crypto-js");
 var SHA256 = require("crypto-js/sha256");
+var CryptoJS = require("crypto-js");
+var crypt = new Crypt();
+//AWS
+var AWS = require('aws-sdk');
+var S3 = require('aws-sdk/clients/s3');
+var AWS = require('aws-sdk/global'),
+region = "us-east-1",
+secretName = "MyDemoSecret",
 
+client = new AWS.SecretsManager({
+ region: region,
+ accessKeyId: "",
+ secretAccessKey:""
+});
 
 
 
@@ -34,6 +52,19 @@ class MainPage3  extends Component{
           userInformationListFromBlockChain:'',
           userInformationFromIPFS:'',
           showModal:false,
+
+          videoSet:'no',
+          photoSet:'no',
+          postPicBuffer:'',
+          postPicHash:'',
+
+          groupInformationSet:null,
+          groupInformationListFromBlockChain:[],
+          groupInformationFromIPFS:null,
+          userPrivateKey:null,
+          latestGroupVersionDetails:null,
+          encryptedGroupKey:null,
+          groupKeyInPlainText:null
         };       
       }
 
@@ -66,6 +97,14 @@ class MainPage3  extends Component{
       }
 
       async loadBlockChainData(){
+        var privateKey;
+        client.getSecretValue({SecretId: this.state.userId}, function(err, data) {
+          console.log("inside function");
+          console.log(data.SecretString);
+          privateKey=data.SecretString;
+        });
+
+
         const web3_2 = window.web3;
         const accounts =  await web3_2.eth.getAccounts();
         this.setState({account:accounts[0]});
@@ -104,12 +143,60 @@ class MainPage3  extends Component{
                    // console.log(userJsonResult);
                     this.setState({fullName:userJsonResult.fullName});
                     this.setState({profilePicHash:userJsonResult.profilePicHash});
+                  
                   }
             });
 
           }
 
-            console.log(this.state.userId);
+          //getting group information 
+
+          tt= await contract.methods.groupCount().call();
+          var groupCount=await tt;
+         // console.log(this.state.groupInformationSet);
+          
+      //   this.setState({ groupInformationMap:new Map()});
+        // this.setState({ blockChainIdforUserMap:new Map()});
+                   for(var i=1;i<=groupCount;i++){
+                     const groupInformationListFromBlockChain= await contract.methods.groupInformation(i).call();
+
+                     //console.log(groupInformationListFromBlockChain)
+                     //console.log(groupInformationListFromBlockChain.groupId.toString());
+                   
+                       this.setState({
+                         groupInformationListFromBlockChain:[...this.state.groupInformationListFromBlockChain, groupInformationListFromBlockChain]
+                      })
+                     if(groupInformationListFromBlockChain.groupOwnerUserId==this.state.userId){
+                         
+                      // ipfs.get("/ipfs/"+groupInformationListFromBlockChain.groupHash,(error,result)=>{
+                        ipfs.files.read("/user/"+groupInformationListFromBlockChain.groupOwnerUserId+"/groupInformationTable",(error,result)=> {
+                         var groupJsonResult = JSON.parse(result);
+                          console.log(groupJsonResult);
+                          this.setState({groupInformationFromIPFS:groupJsonResult});
+                          var groupInformation=groupJsonResult.groupInformation;
+                          var groupLength=groupInformation.length;
+                          var latestGroupVersionDetails=groupInformation[groupLength-1];
+                          console.log(latestGroupVersionDetails);
+                          this.setState({latestGroupVersionDetails:latestGroupVersionDetails});
+
+                          for(var j=0;j<latestGroupVersionDetails.groupMembers.length;j++){
+                            if(this.state.userId=latestGroupVersionDetails.groupMembers[j].userId){
+                              this.setState({encryptedGroupKey:latestGroupVersionDetails.groupMembers[j].encryptedGroupKey});
+                            }
+                          }
+                       });
+                       
+                     }
+
+                    // console.log(this.state.groupInformationMap);
+                    this.pausecomp(500)
+                    console.log("after pause")
+                    this.setState({userPrivateKey:privateKey});
+console.log(this.state.userPrivateKey);
+                   }
+
+
+
         
         }
         else{
@@ -143,6 +230,12 @@ class MainPage3  extends Component{
 
         })
        }
+       getFriendsInform=()=>{
+        this.props.history.push({
+          pathname: '/removeFriend/'+this.state.userId,
+
+        })
+       }
        signOut=()=>{
         this.props.history.push({
           pathname: '/login2',
@@ -150,6 +243,158 @@ class MainPage3  extends Component{
         })
        }
     
+       pausecomp=(millis)=>{
+        var date = new Date();
+        var curDate = null;
+        console.log("in pause");
+        do { curDate = new Date(); }
+        while(curDate-date < millis);
+
+       }
+
+       generateHexString=()=> {
+        var ret = "";
+        while (ret.length < 32) {
+          ret += Math.random().toString(16).substring(2);
+        }
+        return ret.substring(0,32);
+      }
+
+       capturePostFile=(event)=>{
+    
+        console.log(ipfs );
+          event.preventDefault();
+          console.log("file is capture");
+          console.log(event);
+          //type
+          console.log(event.target.files[0]);
+          var str = event.target.files[0].type;
+          var array = str.split('/');
+          var array1=array[0];
+          if(array1=='video'){
+            console.log(array1);
+            ///
+            this.setState({videoSet:"yes"});
+            console.log(this.state.videoSet);
+            ///
+          }
+          else if(array1=='image'){
+            console.log(array1);
+            this.setState({photoSet:"yes"});
+            console.log(this.state.photoSet);
+          }
+          var file = event.target.files[0];
+          var reader = new window.FileReader();
+          reader.readAsArrayBuffer(file);  
+          reader.onloadend = ()=>{
+            console.log(reader.result);
+            this.setState({postPicBuffer:Buffer(reader.result)})
+            console.log("buffer",Buffer(reader.result));
+            console.log(this.state.videoSet);
+            console.log(this.state.photoSet);
+          }   
+         
+      }
+
+       actuallyPost=()=>{
+        var postText=document.getElementById("postTextArea").value;
+        console.log(this.state.groupInformationFromIPFS);
+        console.log(this.state.encryptedGroupKey);
+        console.log(this.state.latestGroupVersionDetails);
+        console.log(this.state.userPrivateKey);
+        var groupKeyInOrginalForm = crypt.decrypt(this.state.userPrivateKey, this.state.encryptedGroupKey);
+        var groupKeyInPlainText=groupKeyInOrginalForm.message;
+        console.log(groupKeyInOrginalForm);
+        
+
+         var postId=uuidv4();
+
+         var postOwnerUserId=this.state.userId;
+         console.log(postOwnerUserId);
+         var sessionKey=this.generateHexString();
+        console.log(sessionKey);
+        console.log("------------")
+        const file = {
+          content: this.state.postPicBuffer
+          //content:this.
+       }
+        ipfs2.add(file,(error,results)=>{
+          console.log(results)
+          this.setState({postPicHash:results[0].hash});
+          var ciphertext = CryptoJS.AES.encrypt('my message', sessionKey).toString();
+         // Decrypt
+        var bytes  = CryptoJS.AES.decrypt(ciphertext, sessionKey);
+        var originalText = bytes.toString(CryptoJS.enc.Utf8);
+ 
+        console.log(originalText); // 'my message'
+
+        var ciphertext2 = CryptoJS.AES.encrypt(postText, sessionKey).toString();
+        // Decrypt
+       var bytes2  = CryptoJS.AES.decrypt(ciphertext2, sessionKey);
+       var originalText2 = bytes2.toString(CryptoJS.enc.Utf8);
+       console.log(originalText2);
+
+          var contentObj={
+            imageVideoIPFSHash:results[0].hash,
+            textData:ciphertext2 
+          }
+          var stringContentObj = Buffer.from(JSON.stringify(contentObj));
+          ipfs2.add(stringContentObj,(error,results)=>{
+
+
+            console.log(results);
+
+            var ciphertext3 = CryptoJS.AES.encrypt(results[0].hash, sessionKey).toString();
+            // Decrypt
+           var bytes3  = CryptoJS.AES.decrypt(ciphertext3, sessionKey);
+           var originalText3 = bytes3.toString(CryptoJS.enc.Utf8);
+           console.log(originalText3);
+
+            var sha =CryptoJS.SHA256(postText).toString();
+           var digSiganture= CryptoJS.AES.encrypt(sha, this.state.userPrivateKey).toString();
+           console.log(digSiganture)
+           console.log(CryptoJS.AES.encrypt(CryptoJS.SHA256(postText).toString(), this.state.userPrivateKey).toString());
+           var postObj={
+             postId:uuidv4(),
+             postOwnerUserId:this.state.userId,
+             postOwnerName:this.state.fullName,
+             groupId:this.state.groupInformationFromIPFS.groupId,
+             groupKeyVersion:this.state.latestGroupVersionDetails.groupKeyVersion,
+             encryptedSessionKey:CryptoJS.AES.encrypt(sessionKey, groupKeyInPlainText).toString(),
+             encryptedIPFSPostHash:ciphertext3,
+            // digitalSignature:CryptoJS.AES.encrypt(CryptoJS.SHA256(postText).toString(), this.state.userPrivateKey).toString()
+           
+           }
+
+           console.log(postObj);
+           var stringPostObj = Buffer.from(JSON.stringify(postObj));
+           ipfs.files.write('/user/'+this.state.userId+"/"+"postInformationTable",stringPostObj, { create: true },(error,results)=>{
+            console.log("inside");
+            console.log(results);
+            ipfs.files.stat('/user/'+this.state.userId+"/"+"/postInformationTable", (error,results)=>{
+              console.log(results);
+            });
+           });
+          })
+        });
+       }
+
+       addFileOnIPFS=()=>{
+      
+        console.log("upload ePic");
+       // event.preventDefault();
+        console.log("in submit event");
+        const file = {
+           content: this.state.postPicBuffer
+           //content:this.
+        }
+        console.log(file);
+        ipfs2.add(file,(error,results)=>{
+          console.log(results)
+          this.setState({postPicHash:results[0].hash});
+        });
+
+       }
 
 
       render(){
