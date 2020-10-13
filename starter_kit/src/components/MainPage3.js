@@ -64,7 +64,10 @@ class MainPage3  extends Component{
           userPrivateKey:null,
           latestGroupVersionDetails:null,
           encryptedGroupKey:null,
-          groupKeyInPlainText:null
+          groupKeyInPlainText:null,
+
+
+          postInformationArray:null
         };       
       }
 
@@ -187,6 +190,24 @@ class MainPage3  extends Component{
                        });
                        
                      }
+
+
+            // getting postInformation 
+
+  tt= await contract.methods.postCount().call();
+          var postCount=await tt;
+
+          for(var i=1;i<=postCount;i++){
+            const postInformationListFromBlockChain= await contract.methods.postInformation(i).call();
+            if(postInformationListFromBlockChain.postOwnerUserId==this.state.userId){
+              ipfs.files.read("/user/"+postInformationListFromBlockChain.postOwnerUserId+"/postInformationTable",(error,result)=> {
+                var postJsonResult = JSON.parse(result);
+                console.log(postJsonResult);
+                this.setState({postInformationArray:postJsonResult});
+              });
+            }
+          }
+
 
                     // console.log(this.state.groupInformationMap);
                     this.pausecomp(500)
@@ -368,13 +389,40 @@ console.log(this.state.userPrivateKey);
 
            console.log(postObj);
            var stringPostObj = Buffer.from(JSON.stringify(postObj));
-           ipfs.files.write('/user/'+this.state.userId+"/"+"postInformationTable",stringPostObj, { create: true },(error,results)=>{
-            console.log("inside");
-            console.log(results);
-            ipfs.files.stat('/user/'+this.state.userId+"/"+"/postInformationTable", (error,results)=>{
+           ipfs.files.stat('/user/'+this.state.userId+"/"+"/postInformationTable", (error,results)=>{
+           
+            if(error){
+              console.log(error);
+              var postInformationArray=[];
+              postInformationArray.push(postObj);
+              stringPostObj = Buffer.from(JSON.stringify(postInformationArray));
+              ipfs.files.write('/user/'+this.state.userId+"/"+"postInformationTable",stringPostObj, { create: true },(error,results)=>{
+              console.log("inside");
               console.log(results);
+              ipfs.files.stat('/user/'+this.state.userId+"/"+"/postInformationTable", (error,results)=>{
+               console.log(results);
+               this.state.contract.methods.createPost(this.state.userId,results.hash).send({from: this.state.account}).then((r)=>{
+                console.log(r);
+            });  
+              });
             });
-           });
+            }
+            else{
+              console.log(results);
+              console.log(this.state.postInformationArray);
+              this.state.postInformationArray.push(postObj);
+              stringPostObj = Buffer.from(JSON.stringify(this.state.postInformationArray));
+              ipfs.files.write('/user/'+this.state.userId+"/"+"postInformationTable",stringPostObj, { create: true },(error,results)=>{
+               console.log("inside");
+              console.log(results);
+              ipfs.files.stat('/user/'+this.state.userId+"/"+"/postInformationTable", (error,results)=>{
+                console.log(results);
+              });
+            });
+
+            }
+          });
+
           })
         });
        }
