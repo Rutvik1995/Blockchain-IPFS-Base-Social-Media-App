@@ -20,9 +20,8 @@ contract Meme{
     }
     struct postHash{
         uint postId;
-        string postedEmailId;
+        string postOwnerUserId;
         string postHash;
-        string uuid;
     }
 
 struct friendRequestHash{
@@ -39,6 +38,8 @@ struct friendRequestHash{
        mapping(uint=>postHash) public postInformation;
        mapping(uint=>friendRequestHash) public friendRequestInformation;
 
+
+    // Adding informtion of userInformation table 
     function addUser(string memory _userId,string memory _userHash,string memory _publicKey) public {
         userCount++;
          userInformation[userCount]= userHash(userCount,_userId,_userHash, _publicKey);
@@ -92,9 +93,6 @@ struct friendRequestHash{
 
 
 
-
-
-
     uint public groupCount=0;
     function createGroup(string memory _groupOwnerUserId,string memory _groupHash)  public {
         groupCount++;
@@ -102,14 +100,31 @@ struct friendRequestHash{
     }
 
   
+
+    uint public postCount=0;
+    function createPost(string memory _postOwnerUserId,string memory _postHash)  public {
+        postCount++;
+        postInformation[groupCount]=postHash(postCount,_postOwnerUserId,_postHash);
+    }
+
+    function changePostInformation(uint  _userId,string memory _newHash) public {
+        uint checkId = _userId;
+        string memory newHash=_newHash;
+       // require((checkId<= userCount) && (checkId>0), “message to be displayed”);
+       
+            string memory k= postInformation[_userId].postHash;
+            k=newHash;
+            postInformation[_userId].postHash=k;
+        
+    }
        
     
 
-    uint public postCount=0;
-    function createPost(string memory _postedByEmailId,string memory _postHash, string memory _uniquePostId)  public {
-        postCount++;
-        postInformation[postCount]=postHash(postCount,_postedByEmailId,_postHash,_uniquePostId);
-    }
+    // uint public postCount=0;
+    // function createPost(string memory _postedByEmailId,string memory _postHash, string memory _uniquePostId)  public {
+    //     postCount++;
+    //     postInformation[postCount]=postHash(postCount,_postedByEmailId,_postHash,_uniquePostId);
+    // }
 
 
 
@@ -118,7 +133,7 @@ struct friendRequestHash{
         return userCount;
     }
 
-  
+ 
 
 
 }
