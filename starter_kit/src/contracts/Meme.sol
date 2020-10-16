@@ -104,7 +104,7 @@ struct friendRequestHash{
     uint public postCount=0;
     function createPost(string memory _postOwnerUserId,string memory _postHash)  public {
         postCount++;
-        postInformation[groupCount]=postHash(postCount,_postOwnerUserId,_postHash);
+        postInformation[postCount]=postHash(postCount,_postOwnerUserId,_postHash);
     }
 
     function changePostInformation(uint  _userId,string memory _newHash) public {

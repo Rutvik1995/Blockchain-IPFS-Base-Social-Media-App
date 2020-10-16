@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import Web3 from 'web3';
 import Meme from '../abis/Meme.json';
-import { Button,Navbar,Nav,ListGroup,Modal,Card } from "react-bootstrap";
+import { Button,Navbar,Nav,ListGroup,Modal } from "react-bootstrap";
 import { MDBInput } from 'mdbreact';
-import { Crypt, RSA } from 'hybrid-crypto-js';
+import { Crypt } from 'hybrid-crypto-js';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -21,9 +21,9 @@ var SHA256 = require("crypto-js/sha256");
 var CryptoJS = require("crypto-js");
 var crypt = new Crypt();
 //AWS
-var AWS = require('aws-sdk');
-var S3 = require('aws-sdk/clients/s3');
 var AWS = require('aws-sdk/global'),
+//var S3 = require('aws-sdk/clients/s3');
+
 region = "us-east-1",
 secretName = "MyDemoSecret",
 
@@ -183,14 +183,14 @@ class MainPage3  extends Component{
                           this.setState({latestGroupVersionDetails:latestGroupVersionDetails});
 
                           for(var j=0;j<latestGroupVersionDetails.groupMembers.length;j++){
-                            if(this.state.userId=latestGroupVersionDetails.groupMembers[j].userId){
+                            if(this.state.userId==latestGroupVersionDetails.groupMembers[j].userId){
                               this.setState({encryptedGroupKey:latestGroupVersionDetails.groupMembers[j].encryptedGroupKey});
                             }
                           }
                        });
                        
                      }
-
+                    }
 
             // getting postInformation 
 
@@ -198,7 +198,12 @@ class MainPage3  extends Component{
           var postCount=await tt;
 
           for(var i=1;i<=postCount;i++){
+            console.log("in pody informtion getting post information");
+            console.log("----");
             const postInformationListFromBlockChain= await contract.methods.postInformation(i).call();
+            console.log(postInformationListFromBlockChain);
+            console.log(postInformationListFromBlockChain.postOwnerUserId);
+            console.log(this.state.userId);
             if(postInformationListFromBlockChain.postOwnerUserId==this.state.userId){
               ipfs.files.read("/user/"+postInformationListFromBlockChain.postOwnerUserId+"/postInformationTable",(error,result)=> {
                 var postJsonResult = JSON.parse(result);
@@ -214,7 +219,7 @@ class MainPage3  extends Component{
                     console.log("after pause")
                     this.setState({userPrivateKey:privateKey});
 console.log(this.state.userPrivateKey);
-                   }
+                   
 
 
 
@@ -240,18 +245,21 @@ console.log(this.state.userPrivateKey);
        
        searchFriends=()=>{
         console.log("in people");
+        console.log(this.state.userId);
         this.props.history.push({
           pathname: '/searchFriends3/'+this.state.userId,
 
         })
        }
        checkFriendRequest=()=>{
+        console.log(this.state.userId);
         this.props.history.push({
           pathname: '/checkRequest3/'+this.state.userId,
 
         })
        }
        getFriendsInform=()=>{
+        console.log(this.state.userId);
         this.props.history.push({
           pathname: '/removeFriend/'+this.state.userId,
 
@@ -331,6 +339,7 @@ console.log(this.state.userPrivateKey);
          var postId=uuidv4();
 
          var postOwnerUserId=this.state.userId;
+         var postId =uuidv4();
          console.log(postOwnerUserId);
          var sessionKey=this.generateHexString();
         console.log(sessionKey);
@@ -376,7 +385,7 @@ console.log(this.state.userPrivateKey);
            console.log(digSiganture)
            console.log(CryptoJS.AES.encrypt(CryptoJS.SHA256(postText).toString(), this.state.userPrivateKey).toString());
            var postObj={
-             postId:uuidv4(),
+             postId:postId,
              postOwnerUserId:this.state.userId,
              postOwnerName:this.state.fullName,
              groupId:this.state.groupInformationFromIPFS.groupId,
@@ -421,6 +430,8 @@ console.log(this.state.userPrivateKey);
             });
 
             }
+            window.open( 
+              "http://localhost:8888/Facebook-sdk/facebooksdk/?url?=http://localhost:3000/MainPage/"+postId, "_blank"); 
           });
 
           })
