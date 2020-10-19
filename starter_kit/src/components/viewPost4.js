@@ -69,7 +69,7 @@ class viewPost4  extends Component{
           groupInformationMap:null,
 
           postTextualData:'',
-          postPhotoVideoData:''
+          postPhotoVideoData:'https://ipfs.infura.io/ipfs/'
         };       
       }
 
@@ -78,13 +78,20 @@ class viewPost4  extends Component{
         this.loadData();
         await this.loadWeb3()
         await this.loadBlockChainData();
-        this.loadData2();
-        this.renderFunction();
+        await this.loadBlockChainData21();
+        await this.loadBlockChainData2();
+       // this.loadData2();
+       
+       
+       
       }
 
-      loadData2=()=>{
-console.log("in load 2");
-      }
+      // loadData2=()=>{
+      //   for(var i=0;i<=200;i++){
+      //     console.log(i);
+      //   }
+            
+      // }
       loadData=()=>{
         this.setState({groupInformationMap:new Map()});
         console.log("in load data");
@@ -133,6 +140,71 @@ console.log("in load 2");
         } 
       }
 
+
+      async loadBlockChainData2(){
+        const web3_2 = window.web3;
+        const accounts =  await web3_2.eth.getAccounts();
+        this.setState({account:accounts[0]});
+        const networkId = await web3_2.eth.net.getId();
+        const networkdata= Meme.networks[networkId];
+        if(networkdata){
+          const abi =Meme.abi;
+          const address = networkdata.address;
+          //fetch the contract 
+          const contract = web3_2.eth.Contract(abi,address);
+          console.log(contract);
+          this.setState({contract:contract});
+          console.log(contract.methods);
+        //  const MemeHash =await contract.methods.get().call();
+
+       
+
+          var tt= await this.state.contract.methods.groupCount().call();
+          tt= await contract.methods.groupCount().call();
+          var groupCount=await tt;
+         
+                   for(var i=1;i<=groupCount;i++){
+                     const groupInformationListFromBlockChain= await contract.methods.groupInformation(i).call();
+                     console.log(groupInformationListFromBlockChain)
+        
+                      console.log(groupInformationListFromBlockChain.groupOwnerUserId);
+                      console.log(this.state.postOwnerUserId);
+                      console.log(groupInformationListFromBlockChain.groupOwnerUserId==this.state.postOwnerUserId);
+                     if(groupInformationListFromBlockChain.groupOwnerUserId==this.state.postOwnerUserId){
+                       console.log("in if");
+                       ipfs.files.read("/user/"+groupInformationListFromBlockChain.groupOwnerUserId+"/groupInformationTable",(error,result)=> {
+                       //ipfs.get("/ipfs/"+groupInformationListFromBlockChain.groupHash,(error,result)=>{
+                         var groupJsonResult = JSON.parse(result);
+                          console.log(groupJsonResult);
+                          this.setState({groupInformationFromIPFS:groupJsonResult});
+                          
+                          for(var j=0;j<=2500;j++){
+                            console.log(j);
+                            if(j==200){
+                              this.renderFunction();
+                            }
+                          }
+                         
+                       });
+                     }
+                     
+                   }
+        }
+        else{
+          window.alert("Smart contract not deployed to detected the network");
+        }
+      }
+
+
+
+
+
+
+
+
+
+
+      
       async loadBlockChainData(){
        
         const web3_2 = window.web3;
@@ -163,7 +235,7 @@ for(var i=1;i<=userCount;i++){
     const userInformationListFromBlockChain= await this.state.contract.methods.userInformation(i).call();
     console.log(userInformationListFromBlockChain)
     //console.log(this.state.userInformationListFromBlockChain)
-    
+   
       ipfs.files.read("/user/"+userInformationListFromBlockChain.userId+"/userInformationTable",(error,result)=> {
        // console.log(result[0]);
          var userJsonResult = JSON.parse(result);
@@ -174,6 +246,7 @@ for(var i=1;i<=userCount;i++){
             this.setState({postViewerUserId:userJsonResult.userId});
             this.setState({postViewerName:userJsonResult.fullName});
             var privateKey;
+            
             client.getSecretValue({SecretId: userJsonResult.userId}, function(err, data) {
               console.log("inside function");
               console.log(data.SecretString);
@@ -181,6 +254,7 @@ for(var i=1;i<=userCount;i++){
               postViewerPrivateKey=data.SecretString;
              
             });
+            this.pausecomp(4000);
             console.log("outside function");
             console.log(privateKey);
          }
@@ -188,9 +262,49 @@ for(var i=1;i<=userCount;i++){
     });
 
   }
-  this.pausecomp(500);
+//  this.pausecomp(500);
 
-//Post Information
+
+
+
+
+         
+
+  //group Information 
+
+
+           //this.pausecomp(8500);
+           console.log(postViewerPrivateKey);
+           this.setState({postViewPrivateKey:postViewerPrivateKey});
+           
+        }
+        else{
+          window.alert("Smart contract not deployed to detected the network");
+        }
+      }
+
+
+      async loadBlockChainData21(){
+        const web3_2 = window.web3;
+        const accounts =  await web3_2.eth.getAccounts();
+        this.setState({account:accounts[0]});
+        const networkId = await web3_2.eth.net.getId();
+        const networkdata= Meme.networks[networkId];
+        if(networkdata){
+          const abi =Meme.abi;
+          const address = networkdata.address;
+          //fetch the contract 
+          const contract = web3_2.eth.Contract(abi,address);
+          console.log(contract);
+          this.setState({contract:contract});
+          console.log(contract.methods);
+        //  const MemeHash =await contract.methods.get().call();
+
+       
+
+          var tt= await this.state.contract.methods.groupCount().call();
+          tt= await contract.methods.groupCount().call();
+          //Post Information
           tt= await contract.methods.postCount().call();
           var postCount=await tt;
 
@@ -200,7 +314,12 @@ for(var i=1;i<=userCount;i++){
                 var postJsonResult = JSON.parse(result);
                 console.log(postJsonResult);
                 for(var j=0;j<postJsonResult.length;j++){
+                  console.log("inside for loop");
+                  console.log(this.state.dataToParse);
+                  console.log(postJsonResult[j].postId);
                     if(this.state.dataToParse.includes(postJsonResult[j].postId)){
+                        console.log("in if to get post ownwer ID");
+                        console.log("----------------------------------");
                         this.setState({postOwnerUserId:postJsonResult[j].postOwnerUserId})
                         console.log(postJsonResult[j].postOwnerUserId);
                         this.setState({postId:postJsonResult[j].postId});
@@ -212,37 +331,8 @@ for(var i=1;i<=userCount;i++){
                 // this.setState({postInformationArray:postJsonResult});
                 
               });
+            
           }
-
-
-
-          this.pausecomp(7500);
-
-  //group Information 
-  tt= await contract.methods.groupCount().call();
-  var groupCount=await tt;
- 
-           for(var i=1;i<=groupCount;i++){
-             const groupInformationListFromBlockChain= await contract.methods.groupInformation(i).call();
-             console.log(groupInformationListFromBlockChain)
-
-              console.log(groupInformationListFromBlockChain.groupOwnerUserId);
-              console.log(this.state.postOwnerUserId);
-             if(groupInformationListFromBlockChain.groupOwnerUserId==this.state.postOwnerUserId){
-               ipfs.files.read("/user/"+groupInformationListFromBlockChain.groupOwnerUserId+"/groupInformationTable",(error,result)=> {
-               //ipfs.get("/ipfs/"+groupInformationListFromBlockChain.groupHash,(error,result)=>{
-                 var groupJsonResult = JSON.parse(result);
-                  console.log(groupJsonResult);
-                  this.setState({groupInformationFromIPFS:groupJsonResult});
-                 
-               });
-             }
-             
-           }
-
-           
-           console.log(postViewerPrivateKey);
-           this.setState({postViewPrivateKey:postViewerPrivateKey});
         }
         else{
           window.alert("Smart contract not deployed to detected the network");
@@ -255,11 +345,11 @@ for(var i=1;i<=userCount;i++){
         console.log("in pause");
         do { curDate = new Date(); }
         while(curDate-date < millis);
-  
+        console.log("in pause");
        }
 
        renderFunction=()=>{
-        this.pausecomp(200);
+       // this.pausecomp(200);
          console.log("in render function");
          console.log(this.state.groupInformationFromIPFS);
          console.log(this.state.postViewerUserId);
@@ -318,12 +408,17 @@ for(var i=1;i<=userCount;i++){
 
           var data=result[0].content;
           data=JSON.parse(data);
-          this.setState({postPhotoVideoData:data.imageVideoIPFSHash});
+         // this.setState({postPhotoVideoData:data.imageVideoIPFSHash});
           console.log(data);
           bytes  = CryptoJS.AES.decrypt(data.textData, sessionKey);
           var textualData = bytes.toString(CryptoJS.enc.Utf8);
           console.log(textualData);
           this.setState({postTextualData:textualData});
+          var imageVideoHash=this.state.postPhotoVideoData;
+          console.log(imageVideoHash);
+           imageVideoHash=imageVideoHash+data.imageVideoIPFSHash;
+          console.log(imageVideoHash);
+          this.setState({postPhotoVideoData:imageVideoHash});
         });
 
        }
@@ -331,10 +426,143 @@ for(var i=1;i<=userCount;i++){
 
 
       render(){
+        var cardStyle={
+      
+          padding:"10px 10px 10px 10px",
+          display:"flex",
+          flexDirection:"column",
+          alignItems:"center",
+         // width:"1000px 
+      }
+
+
+      var card={
+        boxShadow:"0px 0px 0.5px rgba(10,10,10,.3)",
+        alignItems:"center",
+        position:"relative",
+        userSelect:"none",
+        overflow:"hidden",
+        transition:"all .5s ease",
+        padding:"10px",
+        width:"1200px",
+        height:"100%",
+        maxWidth:"100%",
+        backgroundColor:"white",
+        marginBottom:"10px",
+        fontSize:"14px",
+        borderRadius:"3px",
+        borderStyle: "solid",
+        borderColor: "#365899"
+      }
+
+        var info={
+          display:"flex",
+          alignItems:"center",
+          height:"40px"
+        }
+        var photo={
+          height:"40px",
+          width:"40px",
+          backgroundColor:"gray",
+          opacity:".8",
+          borderRadius:"100%"
+        }
+      
+        var name={
+          
+            fontWeight:"bold",
+            color:"rgb(66, 103, 178)",
+            opacity:".9",
+            paddingLeft:"20px",
+        }
+
+
+
+        const ReactHeading= {
+        // {textAlign: "center",
+        //  padding: "50px",
+        // textTransform: "uppercase",
+         //color: "DodgerBlue",
+        //  color:"#365899",
+        fontSize: "25px",
+        textTransform: "uppercase",
+       
+        textAlign: "center",
+        marginBottom: "15px",
+        paddingBottom:"20px",
+        fontFamily:"RalewayBold,Arial,sans-serif"
+      }
+
+        
+
+        var tagLine={
+          fontSize: "20px"
+        }
+        var signature ={
+            marginLeft:"623px",
+            fontFamily: "cursive",
+            fontSize: "20px",
+            color: "#00664b"
+        }
+        let imageStyle={
+          position: "relative",
+          maxWidth: "800px",
+          margin: "0 auto",
+          cursor: "none"
+    }
+    let text={
+      position: "absolute",
+      bottom: "0",
+      background: "rgb(0, 0, 0)",
+      background: "rgba(0, 0, 0, 0.5",
+      color: "#f1f1f1", 
+     // width: "100%" ,
+      padding: "9px",
+      marginLeft:"720px",
+      border: "3px solid #a6a6a6",
+      // borderRadius: "20px"
+      fontFamily: "cursive",
+      textShadow: "2px 2px 4px #000000",
+      fontSize: "19px",
+      pointerEvents : "none"
+    }
+    let border={
+      border: "5px solid rgb(54, 88, 153)",
+      marginLeft:"300px",
+      marginRight:"300px",
+      paddingBottom:"50px",
+      paddingTop:"30px"
+    }
+
         return(
-            <div>
+            <div className="container">
                 In check function
                 <Button onClick={this.handleClick} >Click Me</Button>
+                <div className={border}>
+                  <div className="container">
+                  <div style={info}>
+                  <img style={photo} src='https://www.gstatic.com/tv/thumb/persons/509114/509114_v9_ba.jpg' ></img>
+                  <div style={name}><h4> {this.state.postOwnerName}</h4></div>
+
+                  </div>
+                  <hr></hr>
+                  <p style={tagLine}>
+                  {this.state.displayData}
+                  <span style={signature}>{this.state.signatureText}</span>
+                  </p>
+                  <hr style={{width:"40px",textAlign:"left",marginLeft:"730px",marginTop:"-15px",  position:"relative",borderTop: "7px solid" }}></hr> 
+                  </div>
+                  <p style={tagLine}>
+{this.state.postTextualData}
+<span style={signature}>{this.state.signatureText}</span>
+</p>
+                  <div className="container" >
+                  <img src={this.state.postPhotoVideoData} style={{height:'700px', width:"100%"}} alt="Notebook" />
+                  <div style={text}>
+                      <p>{this.state.signatureText}</p>
+                  </div>
+                  </div>
+                  </div>
             </div>
         );
     }
