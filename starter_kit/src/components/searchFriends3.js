@@ -39,6 +39,14 @@ client = new AWS.SecretsManager({
 
 
 
+
+ // Create a Secrets Manager client
+// var client = new AWS.SecretsManager({
+//   region: region,
+//   accessKeyId: "AKIAWWXYWF2RYZXUYVWR",
+//   secretAccessKey:"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"
+// });
+
 class searchFriends3 extends Component{
 
       
@@ -61,8 +69,9 @@ class searchFriends3 extends Component{
           groupInformationFromIPFS:null,
           publicKeyMap:null,
           userPrivateKey:'',
-         
-
+          showModal:false,
+          addFriendName:"",
+          friendData:null
         };       
       }
 
@@ -81,7 +90,6 @@ class searchFriends3 extends Component{
         console.log(secondUrl);
         this.setState({userId:secondUrl});
         var secretId=secondUrl;
-
     }
 
 
@@ -346,6 +354,7 @@ console.log(this.state.userPrivateKey);
                       console.log(r);
                       console.log("done");
                   });
+                  this.mainPage();
                   });
                  });
 
@@ -382,7 +391,16 @@ console.log(this.state.userPrivateKey);
              // your data array of objects
           })
          }
-      
+         addFriendModel=(data)=>{
+          console.log("inside open");
+          console.log(data);
+          this.setState({friendData:data});
+          this.setState({friendName:data.fullName});
+          this.setState({ showModal: true });
+        }
+        closeModal=()=>{
+          this.setState({ showModal: false });
+        }
 
 
 
@@ -414,7 +432,7 @@ console.log(this.state.userPrivateKey);
               {/* <p className="subtitle"><b><h4>{people.name}</h4></b></p> */}
               <Card.Title>{people.fullName}</Card.Title>
               <br></br>
-              <Card.Link style={{padding:"10px"}} onClick={() => this.addFriend(people)}><Button variant="primary" size="sm" >Add Friend</Button></Card.Link>
+              <Card.Link style={{padding:"10px"}} onClick={() => this.addFriendModel(people)}><Button variant="primary" size="sm" >Add Friend</Button></Card.Link>
               <Card.Link  ><Button variant="secondary" size="sm" >View Profile</Button></Card.Link>
             </div>
           </div>
@@ -459,7 +477,28 @@ console.log(this.state.userPrivateKey);
 
  </div>            
 
-
+ <Modal show={this.state.showModal} onHide={this.closeModal}  size="lg">
+                  <Modal.Header closeButton>
+                    <Modal.Title style={{color:"#205663", paddingLeft:"310px"}}>Success</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>    
+                  <div className="card2" expand="false">
+                            <div className="info">
+                                {/* <img style={photo} src={this.state.userJsonResultOfParticularUserFromIPFS.profilePicHash} ></img> */}
+                              <div className="name"><h4>{this.state.fullName}</h4></div>
+                              <div style={{textAlign:"center", marginTop:"280px"}} >
+                              <div className="name"><h4>Are You Sure, you want to add  {this.state.friendName}</h4>
+                             </div>
+                            </div>
+                          </div>
+                    </div>  
+                
+                    <hr></hr>
+                  </Modal.Body>
+                  <Modal.Footer>
+                  <Button onClick={() => this.addFriend(this.state.friendData)}>Yes</Button>
+                </Modal.Footer>
+              </Modal>
 
 
 
