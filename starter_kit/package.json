@@ -31,7 +31,7 @@
     "react-scripts": "2.1.3",
     "react-search-box": "^2.0.2",
     "redux": "^4.0.5",
-    "truffle": "5.0.5",
+    "truffle": "5.11.5",
     "uuid": "^8.3.0",
     "video-react": "^0.14.1",
     "web3": "1.0.0-beta.55"
