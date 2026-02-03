@@ -34,7 +34,7 @@
     "truffle": "5.0.5",
     "uuid": "^8.3.0",
     "video-react": "^0.14.1",
-    "web3": "1.0.0-beta.55"
+    "web3": "1.10.4"
   },
   "scripts": {
     "start": "react-scripts start",
